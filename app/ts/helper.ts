@@ -1,3 +1,5 @@
+import { PersonData } from "../types";
+
 type UnicodeStyle = "bold" | "italic" | "bold italic" | "plain";
 
 type ConversionSpec = {
@@ -103,4 +105,42 @@ function unicodeFormat(text: any, style: UnicodeStyle): any {
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-export { unicodeFormat, generateId };
+const copyGenerate = (currentPpl?: PersonData[]): void => {
+    if (!currentPpl) return;
+
+    const sitting = currentPpl
+        .filter((p) => p.status === "Sitting" && p.name)
+        .map((p) => p.name);
+    const serving = currentPpl
+        .filter((p) => p.status === "Serving" && p.name)
+        .map((p) => p.name);
+    const alwaysServing = currentPpl
+        .filter((p) => p.status === "Core" && p.name)
+        .map((p) => p.name);
+    const others = currentPpl
+        .filter((p) => p.status === "Others" && p.name)
+        .map((p) => p.name);
+
+    const headerText = unicodeFormat("Service 2 Attendance", "bold");
+    let message = headerText + "\n\n";
+
+    if (sitting.length > 0) {
+        message += `Sitting: (${sitting.length})\n- ${sitting.join(", ")}\n\n`;
+    }
+    if (serving.length > 0 || alwaysServing.length > 0) {
+        const allServing = [...serving, ...alwaysServing];
+        message += `Serving: (${allServing.length})\n- ${allServing.join(
+            ", "
+        )}\n\n`;
+    }
+    if (others.length > 0) {
+        message += `Others: (${others.length})\n- ${others.join(", ")}\n\n`;
+    }
+
+    navigator.clipboard.writeText(message.trim()).then(
+        () => alert("Message copied to clipboard!"),
+        (err) => console.error("Failed to copy message: ", err)
+    );
+};
+
+export { unicodeFormat, generateId, copyGenerate };

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { unicodeFormat, generateId } from "./ts/helper";
+import { unicodeFormat, generateId, copyGenerate } from "./ts/helper";
 import {
     getCurrentPpl,
     postCurrentPpl,
@@ -150,46 +150,6 @@ const Home: React.FC = () => {
         ));
     }, [currentPpl, handleStatusChange, handleNameChange]);
 
-    const copyGenerate = (): void => {
-        if (!currentPpl) return;
-
-        const sitting = currentPpl
-            .filter((p) => p.status === "Sitting" && p.name)
-            .map((p) => p.name);
-        const serving = currentPpl
-            .filter((p) => p.status === "Serving" && p.name)
-            .map((p) => p.name);
-        const alwaysServing = currentPpl
-            .filter((p) => p.status === "Core" && p.name)
-            .map((p) => p.name);
-        const others = currentPpl
-            .filter((p) => p.status === "Others" && p.name)
-            .map((p) => p.name);
-
-        const headerText = unicodeFormat("Service 2 Attendance", "bold");
-        let message = headerText + "\n\n";
-
-        if (sitting.length > 0) {
-            message += `Sitting: (${sitting.length})\n- ${sitting.join(
-                ", "
-            )}\n\n`;
-        }
-        if (serving.length > 0 || alwaysServing.length > 0) {
-            const allServing = [...serving, ...alwaysServing];
-            message += `Serving: (${allServing.length})\n- ${allServing.join(
-                ", "
-            )}\n\n`;
-        }
-        if (others.length > 0) {
-            message += `Others: (${others.length})\n- ${others.join(", ")}\n\n`;
-        }
-
-        navigator.clipboard.writeText(message.trim()).then(
-            () => alert("Message copied to clipboard!"),
-            (err) => console.error("Failed to copy message: ", err)
-        );
-    };
-
     useEffect(() => {
         initPpl();
     }, []);
@@ -276,7 +236,7 @@ const Home: React.FC = () => {
                                 Save Current
                             </button>
                             <button
-                                onClick={copyGenerate}
+                                onClick={() => copyGenerate(currentPpl)}
                                 className="w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                                 Generate Message
