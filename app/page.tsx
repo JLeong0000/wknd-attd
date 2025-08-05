@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { unicodeFormat } from "./ts/helper";
 import { getCurrentPpl } from "./ts/app";
 import { IoPersonAddSharp } from "react-icons/io5";
@@ -8,40 +8,29 @@ import { IoPersonAddSharp } from "react-icons/io5";
 import Person from "./components/Person";
 import { PersonData } from "./types";
 
-const generateUUID = () => {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-        /[xy]/g,
-        function (c) {
-            const r = (Math.random() * 16) | 0;
-            const v = c === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        }
-    );
-};
-
 // Implement store to get and update current and default people
 
 const Home: React.FC = () => {
     const [currentPpl, setCurrentPpl] = useState<PersonData[] | undefined>([
         {
-            id: generateUUID(),
+            id: useId(),
             name: "John Doe",
             status: "Serving",
         },
         {
-            id: generateUUID(),
+            id: useId(),
             name: "Jane Smith",
             status: "Always Serving",
         },
     ]);
     const [defaultPpl, setDefaultPpl] = useState<PersonData[] | undefined>([
         {
-            id: generateUUID(),
+            id: useId(),
             name: "Michael Johnson",
             status: "Sitting",
         },
         {
-            id: generateUUID(),
+            id: useId(),
             name: "Emily Davis",
             status: "Others",
         },

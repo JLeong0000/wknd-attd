@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef } from "react";
 import { STATUSENUM } from "../ts/enums";
 import { PersonData } from "../types";
