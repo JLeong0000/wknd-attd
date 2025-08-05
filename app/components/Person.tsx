@@ -42,24 +42,25 @@ const Person: React.FC<PersonProps> = ({
 
     return (
         <div
-            key={person.name + "_" + person.id}
+            key={"container_" + person.id}
             className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 
 				${isEditing ? "text-blue-500" : ""}`}
         >
             <input
                 ref={inputRef}
-                id={person.id}
+                id={"name_" + person.id}
                 value={person.name}
                 onChange={handleNameChangeEvent}
                 className={`p-1 text-lg font-medium min-w-0
 					${isEditing ? "text-blue-500" : "text-slate-700"}`}
             />
 
-            <div className="flex items-center">
+            <div className="flex items-center justify-end w-full min-w-[135px] max-w-[180px]">
                 <select
+                    id={"select_" + person.id}
                     value={person.status}
                     onChange={handleStatusChangeEvent}
-                    className={`p-2 border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                    className={`p-2 w-full border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
 					${isEditing ? "text-blue-500" : "text-black"}`}
                 >
                     {STATUSENUM.map((stat) => (
@@ -68,7 +69,6 @@ const Person: React.FC<PersonProps> = ({
                         </option>
                     ))}
                 </select>
-
                 <button
                     onClick={() => deletePerson(person.id)}
                     className="ml-2 p-2 rounded-md cursor-pointer text-red-500 hover:bg-slate-200"

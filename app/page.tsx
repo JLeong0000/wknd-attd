@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { unicodeFormat } from "./ts/helper";
 import { getCurrentPpl } from "./ts/app";
 import { IoPersonAddSharp } from "react-icons/io5";
@@ -8,29 +8,29 @@ import { IoPersonAddSharp } from "react-icons/io5";
 import Person from "./components/Person";
 import { PersonData } from "./types";
 
-// Implement store to get and update current and default people
+const generateId = () => Math.random().toString(36).substring(2, 9);
 
 const Home: React.FC = () => {
     const [currentPpl, setCurrentPpl] = useState<PersonData[] | undefined>([
         {
-            id: useId(),
+            id: generateId(),
             name: "John Doe",
             status: "Serving",
         },
         {
-            id: useId(),
+            id: generateId(),
             name: "Jane Smith",
-            status: "Always Serving",
+            status: "Core",
         },
     ]);
     const [defaultPpl, setDefaultPpl] = useState<PersonData[] | undefined>([
         {
-            id: useId(),
+            id: generateId(),
             name: "Michael Johnson",
             status: "Sitting",
         },
         {
-            id: useId(),
+            id: generateId(),
             name: "Emily Davis",
             status: "Others",
         },
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
 
     const addPerson = () => {
         const newPerson = {
-            id: useId(),
+            id: generateId(),
             name: "",
             status: "Sitting",
         };
@@ -155,7 +155,7 @@ const Home: React.FC = () => {
             .filter((p) => p.status === "Serving" && p.name)
             .map((p) => p.name);
         const alwaysServing = currentPpl
-            .filter((p) => p.status === "Always Serving" && p.name)
+            .filter((p) => p.status === "Core" && p.name)
             .map((p) => p.name);
         const others = currentPpl
             .filter((p) => p.status === "Others" && p.name)
@@ -199,8 +199,8 @@ const Home: React.FC = () => {
 
     return (
         <main>
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-6 space-y-7">
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-4 space-y-7">
                     <header>
                         <p className="text-4xl font-bold text-slate-800 text-center">
                             Attendance Generator
