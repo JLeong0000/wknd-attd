@@ -236,7 +236,7 @@ const Home: React.FC = () => {
 
                         <button
                             onClick={addPerson}
-                            className="flex items-center justify-center w-full p-3 text-zinc-500 rounded-lg cursor-pointer border border-slate-200 bg-slate-100 hover:bg-slate-200"
+                            className="flex items-center justify-center w-full p-3 text-xl text-zinc-500 rounded-lg cursor-pointer border border-slate-200 bg-slate-100 hover:bg-slate-200"
                         >
                             <IoPersonAddSharp />
                         </button>
