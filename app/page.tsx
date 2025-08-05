@@ -1,64 +1,62 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { unicodeFormat } from "./ts/helper";
-import { getCurrentPpl } from "./ts/app";
+import { unicodeFormat, generateId } from "./ts/helper";
+import {
+    getCurrentPpl,
+    postCurrentPpl,
+    getDefaultPpl,
+    postDefaultPpl,
+} from "./ts/server";
 import { IoPersonAddSharp } from "react-icons/io5";
 
 import Person from "./components/Person";
 import { PersonData } from "./types";
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
-
 const Home: React.FC = () => {
-    const [currentPpl, setCurrentPpl] = useState<PersonData[] | undefined>([
-        {
-            id: generateId(),
-            name: "John Doe",
-            status: "Serving",
-        },
-        {
-            id: generateId(),
-            name: "Jane Smith",
-            status: "Core",
-        },
-    ]);
-    const [defaultPpl, setDefaultPpl] = useState<PersonData[] | undefined>([
-        {
-            id: generateId(),
-            name: "Michael Johnson",
-            status: "Sitting",
-        },
-        {
-            id: generateId(),
-            name: "Emily Davis",
-            status: "Others",
-        },
-    ]);
-    const [tempDefaultPpl, setTempDefaultPpl] = useState<
-        PersonData[] | undefined
-    >();
-    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [currentPpl, setCurrentPpl] = useState<PersonData[] | undefined>();
+    const [defaultPpl, setDefaultPpl] = useState<PersonData[] | undefined>();
+    const [tempDefPpl, setTempDefPpl] = useState<PersonData[] | undefined>();
+    const [isEditing, setIsEditing] = useState(false);
+    const [currModified, setCurrModified] = useState(false);
+    const [tempModified, setTempModified] = useState(false);
+
+    const initPpl = async () => {
+        setCurrentPpl(await getCurrentPpl());
+        setDefaultPpl(await getDefaultPpl());
+    };
 
     const startEditing = () => {
         if (isEditing) {
+            setTempModified(false);
             setIsEditing(false);
         } else {
-            setTempDefaultPpl(defaultPpl);
+            setTempDefPpl(defaultPpl);
             setIsEditing(true);
         }
     };
 
-    const updateDefault = (): void => {
-        console.log("Implement save to store");
-        setDefaultPpl(tempDefaultPpl);
+    const resetCurrPpl = () => {
+        setCurrModified(true);
+        setCurrentPpl(defaultPpl);
+    };
+
+    const updateDefault = async (): Promise<void> => {
+        setDefaultPpl(tempDefPpl);
+        postDefaultPpl(tempDefPpl);
         setIsEditing(false);
+    };
+
+    const saveCurrent = async (): Promise<void> => {
+        setCurrModified(false);
+        postCurrentPpl(currentPpl);
     };
 
     const handleStatusChange = useCallback(
         (id: string, newStatus: string, isEditing: boolean) => {
             if (isEditing) {
-                setTempDefaultPpl((prev) =>
+                setTempModified(true);
+                setTempDefPpl((prev) =>
                     prev?.map((person) =>
                         person.id === id
                             ? { ...person, status: newStatus }
@@ -66,6 +64,7 @@ const Home: React.FC = () => {
                     )
                 );
             } else {
+                setCurrModified(true);
                 setCurrentPpl((prev) =>
                     prev?.map((person) =>
                         person.id === id
@@ -81,12 +80,14 @@ const Home: React.FC = () => {
     const handleNameChange = useCallback(
         (id: string, newName: string, isEditing: boolean) => {
             if (isEditing) {
-                setTempDefaultPpl((prev) =>
+                setTempModified(true);
+                setTempDefPpl((prev) =>
                     prev?.map((person) =>
                         person.id === id ? { ...person, name: newName } : person
                     )
                 );
             } else {
+                setCurrModified(true);
                 setCurrentPpl((prev) =>
                     prev?.map((person) =>
                         person.id === id ? { ...person, name: newName } : person
@@ -105,22 +106,26 @@ const Home: React.FC = () => {
         };
 
         if (isEditing) {
-            setDefaultPpl((prev) => [...(prev || []), newPerson]);
+            setTempModified(true);
+            setTempDefPpl((prev) => [...(prev || []), newPerson]);
         } else {
+            setCurrModified(true);
             setCurrentPpl((prev) => [...(prev || []), newPerson]);
         }
     };
 
     const deletePerson = (id: string) => {
         if (isEditing) {
-            setDefaultPpl((prev) => prev?.filter((person) => person.id !== id));
+            setTempModified(true);
+            setTempDefPpl((prev) => prev?.filter((person) => person.id !== id));
         } else {
+            setCurrModified(true);
             setCurrentPpl((prev) => prev?.filter((person) => person.id !== id));
         }
     };
 
     const editingPeople = useMemo(() => {
-        return tempDefaultPpl?.map((person) => (
+        return tempDefPpl?.map((person) => (
             <Person
                 key={person.id}
                 person={person}
@@ -130,7 +135,7 @@ const Home: React.FC = () => {
                 isEditing={true}
             />
         ));
-    }, [tempDefaultPpl, handleStatusChange, handleNameChange]);
+    }, [tempDefPpl, handleStatusChange, handleNameChange]);
 
     const currentPeople = useMemo(() => {
         return currentPpl?.map((person) => (
@@ -186,16 +191,16 @@ const Home: React.FC = () => {
     };
 
     useEffect(() => {
+        initPpl();
+    }, []);
+
+    useEffect(() => {
         console.log("currentPpl", currentPpl);
     }, [currentPpl]);
 
     useEffect(() => {
-        console.log("defaultPpl", defaultPpl);
-    }, [defaultPpl]);
-
-    useEffect(() => {
-        console.log("tempDefaultPpl", tempDefaultPpl);
-    }, [tempDefaultPpl]);
+        console.log("tempDefPpl", tempDefPpl);
+    }, [tempDefPpl]);
 
     return (
         <main>
@@ -212,7 +217,7 @@ const Home: React.FC = () => {
 
                     <div className="flex gap-2">
                         <button
-                            onClick={() => setCurrentPpl(defaultPpl)}
+                            onClick={resetCurrPpl}
                             disabled={isEditing}
                             className={`w-full text-white font-bold py-2 px-4 rounded-lg ${
                                 isEditing
@@ -245,17 +250,38 @@ const Home: React.FC = () => {
                     {isEditing ? (
                         <button
                             onClick={updateDefault}
-                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            disabled={!tempModified}
+                            className={`w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                                ${
+                                    tempModified
+                                        ? "bg-violet-600 hover:bg-violet-700"
+                                        : "bg-zinc-700"
+                                }
+                                `}
                         >
                             Update Default
                         </button>
                     ) : (
-                        <button
-                            onClick={copyGenerate}
-                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            Generate and Copy Message
-                        </button>
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={saveCurrent}
+                                disabled={!currModified}
+                                className={`w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer bg-violet-600 hover:bg-violet-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                                    ${
+                                        currModified
+                                            ? "bg-violet-600 hover:bg-violet-700"
+                                            : "bg-zinc-700"
+                                    }`}
+                            >
+                                Save Current
+                            </button>
+                            <button
+                                onClick={copyGenerate}
+                                className="w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                Generate Message
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

@@ -101,4 +101,6 @@ function unicodeFormat(text: any, style: UnicodeStyle): any {
     return _format(text);
 }
 
-export { unicodeFormat };
+const generateId = () => Math.random().toString(36).substring(2, 9);
+
+export { unicodeFormat, generateId };
