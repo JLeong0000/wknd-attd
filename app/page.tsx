@@ -99,7 +99,7 @@ const Home: React.FC = () => {
 
     const addPerson = () => {
         const newPerson = {
-            id: generateUUID(),
+            id: useId(),
             name: "",
             status: "Sitting",
         };
