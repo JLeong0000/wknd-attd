@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { unicodeFormat } from "./ts/helper";
 import { getCurrentPpl } from "./ts/app";
+import { IoPersonAddSharp } from "react-icons/io5";
 
 import Person from "./components/Person";
 import { PersonData } from "./types";
@@ -45,68 +46,130 @@ const Home: React.FC = () => {
             status: "Others",
         },
     ]);
+    const [tempDefaultPpl, setTempDefaultPpl] = useState<
+        PersonData[] | undefined
+    >();
     const [isEditing, setIsEditing] = useState<boolean>(false);
+
+    const startEditing = () => {
+        if (isEditing) {
+            setIsEditing(false);
+        } else {
+            setTempDefaultPpl(defaultPpl);
+            setIsEditing(true);
+        }
+    };
 
     const updateDefault = (): void => {
         console.log("Implement save to store");
+        setDefaultPpl(tempDefaultPpl);
         setIsEditing(false);
-        console.log("Updated default", defaultPpl);
     };
 
-    const handleStatusChange = (
-        id: string,
-        newStatus: string,
-        isEditing: boolean
-    ): void => {
+    const handleStatusChange = useCallback(
+        (id: string, newStatus: string, isEditing: boolean) => {
+            if (isEditing) {
+                setTempDefaultPpl((prev) =>
+                    prev?.map((person) =>
+                        person.id === id
+                            ? { ...person, status: newStatus }
+                            : person
+                    )
+                );
+            } else {
+                setCurrentPpl((prev) =>
+                    prev?.map((person) =>
+                        person.id === id
+                            ? { ...person, status: newStatus }
+                            : person
+                    )
+                );
+            }
+        },
+        []
+    );
+
+    const handleNameChange = useCallback(
+        (id: string, newName: string, isEditing: boolean) => {
+            if (isEditing) {
+                setTempDefaultPpl((prev) =>
+                    prev?.map((person) =>
+                        person.id === id ? { ...person, name: newName } : person
+                    )
+                );
+            } else {
+                setCurrentPpl((prev) =>
+                    prev?.map((person) =>
+                        person.id === id ? { ...person, name: newName } : person
+                    )
+                );
+            }
+        },
+        []
+    );
+
+    const addPerson = () => {
+        const newPerson = {
+            id: generateUUID(),
+            name: "",
+            status: "Sitting",
+        };
+
         if (isEditing) {
-            setDefaultPpl((prev) =>
-                prev?.map((person) =>
-                    person.id == id ? { ...person, status: newStatus } : person
-                )
-            );
+            setDefaultPpl((prev) => [...(prev || []), newPerson]);
         } else {
-            setCurrentPpl((prev) =>
-                prev?.map((person) =>
-                    person.id == id ? { ...person, status: newStatus } : person
-                )
-            );
+            setCurrentPpl((prev) => [...(prev || []), newPerson]);
         }
     };
 
-    const handleNameChange = (
-        id: string,
-        newName: string,
-        isEditing: boolean
-    ): void => {
+    const deletePerson = (id: string) => {
         if (isEditing) {
-            setDefaultPpl((prev) =>
-                prev?.map((person) =>
-                    person.id == id ? { ...person, name: newName } : person
-                )
-            );
+            setDefaultPpl((prev) => prev?.filter((person) => person.id !== id));
         } else {
-            setCurrentPpl((prev) =>
-                prev?.map((person) =>
-                    person.id == id ? { ...person, name: newName } : person
-                )
-            );
+            setCurrentPpl((prev) => prev?.filter((person) => person.id !== id));
         }
     };
+
+    const editingPeople = useMemo(() => {
+        return tempDefaultPpl?.map((person) => (
+            <Person
+                key={person.id}
+                person={person}
+                handleStatusChange={handleStatusChange}
+                handleNameChange={handleNameChange}
+                deletePerson={deletePerson}
+                isEditing={true}
+            />
+        ));
+    }, [tempDefaultPpl, handleStatusChange, handleNameChange]);
+
+    const currentPeople = useMemo(() => {
+        return currentPpl?.map((person) => (
+            <Person
+                key={person.id}
+                person={person}
+                handleStatusChange={handleStatusChange}
+                handleNameChange={handleNameChange}
+                deletePerson={deletePerson}
+                isEditing={false}
+            />
+        ));
+    }, [currentPpl, handleStatusChange, handleNameChange]);
 
     const copyGenerate = (): void => {
         if (!currentPpl) return;
 
         const sitting = currentPpl
-            .filter((p) => p.status === "Sitting")
+            .filter((p) => p.status === "Sitting" && p.name)
             .map((p) => p.name);
         const serving = currentPpl
-            .filter((p) => p.status === "Serving")
+            .filter((p) => p.status === "Serving" && p.name)
             .map((p) => p.name);
         const alwaysServing = currentPpl
-            .filter((p) => p.status === "Always Serving")
+            .filter((p) => p.status === "Always Serving" && p.name)
             .map((p) => p.name);
         const others = currentPpl
-            .filter((p) => p.status === "Others")
+            .filter((p) => p.status === "Others" && p.name)
             .map((p) => p.name);
 
         const headerText = unicodeFormat("Service 2 Attendance", "bold");
@@ -133,29 +196,46 @@ const Home: React.FC = () => {
         );
     };
 
+    useEffect(() => {
+        console.log("currentPpl", currentPpl);
+    }, [currentPpl]);
+
+    useEffect(() => {
+        console.log("defaultPpl", defaultPpl);
+    }, [defaultPpl]);
+
+    useEffect(() => {
+        console.log("tempDefaultPpl", tempDefaultPpl);
+    }, [tempDefaultPpl]);
+
     return (
         <main>
             <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
+                <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-6 space-y-7">
                     <header>
                         <p className="text-4xl font-bold text-slate-800 text-center">
                             Attendance Generator
                         </p>
                         <p className="text-center text-slate-500 mt-1">
-                            Update the status for each person
+                            Update status for each person
                         </p>
                     </header>
 
                     <div className="flex gap-2">
                         <button
                             onClick={() => setCurrentPpl(defaultPpl)}
-                            className="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+                            disabled={isEditing}
+                            className={`w-full text-white font-bold py-2 px-4 rounded-lg ${
+                                isEditing
+                                    ? "bg-zinc-700"
+                                    : "bg-red-800 hover:bg-red-700 cursor-pointer"
+                            } `}
                         >
                             Reset
                         </button>
                         <button
-                            onClick={() => setIsEditing(!isEditing)}
-                            className={`w-full bg-slate-800 hover:bg-slate-700 font-bold py-2 px-4 rounded-lg 
+                            onClick={() => startEditing()}
+                            className={`w-full bg-slate-800 hover:bg-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer 
 								${isEditing ? "text-blue-400" : "text-white"} `}
                         >
                             {isEditing ? "Editing" : "Edit Default"}
@@ -163,40 +243,27 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="space-y-3">
-                        {isEditing
-                            ? defaultPpl &&
-                              defaultPpl.map((person) => (
-                                  <Person
-                                      key={person.id}
-                                      person={person}
-                                      handleStatusChange={handleStatusChange}
-                                      handleNameChange={handleNameChange}
-                                      isEditing={isEditing}
-                                  />
-                              ))
-                            : currentPpl &&
-                              currentPpl.map((person) => (
-                                  <Person
-                                      key={person.id}
-                                      person={person}
-                                      handleStatusChange={handleStatusChange}
-                                      handleNameChange={handleNameChange}
-                                      isEditing={isEditing}
-                                  />
-                              ))}
+                        {isEditing ? editingPeople : currentPeople}
+
+                        <button
+                            onClick={addPerson}
+                            className="flex items-center justify-center w-full p-3 text-zinc-500 rounded-lg cursor-pointer border border-slate-200 bg-slate-100 hover:bg-slate-200"
+                        >
+                            <IoPersonAddSharp />
+                        </button>
                     </div>
 
                     {isEditing ? (
                         <button
                             onClick={updateDefault}
-                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             Update Default
                         </button>
                     ) : (
                         <button
                             onClick={copyGenerate}
-                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg cursor-pointer hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             Generate and Copy Message
                         </button>

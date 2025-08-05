@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { STATUSENUM } from "../ts/enums";
 import { PersonData } from "../types";
+import { IoTrashBinSharp } from "react-icons/io5";
 
 interface PersonProps {
     person: PersonData;
@@ -10,6 +11,7 @@ interface PersonProps {
         isEditing: boolean
     ) => void;
     handleNameChange: (id: string, newName: string, isEditing: boolean) => void;
+    deletePerson: (id: string) => void;
     isEditing: boolean;
 }
 
@@ -17,6 +19,7 @@ const Person: React.FC<PersonProps> = ({
     person,
     handleStatusChange,
     handleNameChange,
+    deletePerson,
     isEditing,
 }) => {
     const handleNameChangeEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +32,12 @@ const Person: React.FC<PersonProps> = ({
         handleStatusChange(person.id, e.target.value, isEditing);
     };
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (inputRef.current) inputRef.current.focus();
+    }, [person.name]);
+
     return (
         <div
             key={person.name + "_" + person.id}
@@ -36,25 +45,35 @@ const Person: React.FC<PersonProps> = ({
 				${isEditing ? "text-blue-500" : ""}`}
         >
             <input
+                ref={inputRef}
                 id={person.id}
-                defaultValue={person.name}
+                value={person.name}
                 onChange={handleNameChangeEvent}
-                className={`text-lg font-medium 
+                className={`p-1 text-lg font-medium min-w-0
 					${isEditing ? "text-blue-500" : "text-slate-700"}`}
             />
 
-            <select
-                value={person.status}
-                onChange={handleStatusChangeEvent}
-                className={`w-40 p-2 border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+            <div className="flex items-center">
+                <select
+                    value={person.status}
+                    onChange={handleStatusChangeEvent}
+                    className={`p-2 border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
 					${isEditing ? "text-blue-500" : "text-black"}`}
-            >
-                {STATUSENUM.map((stat) => (
-                    <option key={stat} value={stat} className="pr-2">
-                        {stat}
-                    </option>
-                ))}
-            </select>
+                >
+                    {STATUSENUM.map((stat) => (
+                        <option key={stat} value={stat} className="">
+                            {stat}
+                        </option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={() => deletePerson(person.id)}
+                    className="ml-2 p-2 rounded-md cursor-pointer text-red-500 hover:bg-slate-200"
+                >
+                    <IoTrashBinSharp />
+                </button>
+            </div>
         </div>
     );
 };
