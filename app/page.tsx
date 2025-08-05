@@ -189,7 +189,7 @@ const Home: React.FC = () => {
                         </button>
                         <button
                             onClick={() => startEditing()}
-                            className={`w-full bg-slate-800 hover:bg-slate-700 font-bold py-2 px-4 rounded-lg cursor-pointer 
+                            className={`w-full bg-indigo-900 hover:bg-indigo-800 font-bold py-2 px-4 rounded-lg cursor-pointer 
 								${isEditing ? "text-blue-400" : "text-white"} `}
                         >
                             {isEditing ? "Editing" : "Edit Default"}
