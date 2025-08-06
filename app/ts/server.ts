@@ -8,7 +8,7 @@ export const runtime = "edge"; // Use Edge Runtime
 
 async function getPeople() {
     try {
-        const res = await fetch("http://localhost:3000/people");
+        const res = await fetch("https://wknd-attd.vercel.app/people");
         const people = await res.json();
         return people;
     } catch (error) {
