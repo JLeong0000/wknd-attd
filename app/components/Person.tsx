@@ -34,6 +34,13 @@ const Person: React.FC<PersonProps> = ({
         handleStatusChange(person.id, e.target.value, isEditing);
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            inputRef.current?.blur();
+        }
+    };
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -51,6 +58,7 @@ const Person: React.FC<PersonProps> = ({
                 id={"name_" + person.id}
                 value={person.name}
                 onChange={handleNameChangeEvent}
+                onKeyDown={handleKeyDown}
                 className={`p-1 text-lg font-medium min-w-0
 					${isEditing ? "text-blue-500" : "text-slate-700"}`}
             />
