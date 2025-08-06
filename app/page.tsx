@@ -2,29 +2,31 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { unicodeFormat, generateId, copyGenerate } from "./ts/helper";
-import {
-    getCurrentPpl,
-    postCurrentPpl,
-    getDefaultPpl,
-    postDefaultPpl,
-} from "./ts/server";
+import { getPeople, postCurrentPpl, postDefaultPpl } from "./ts/server";
 import { IoPersonAddSharp } from "react-icons/io5";
 
 import Person from "./components/Person";
 import { PersonData } from "./types";
 
 const Home: React.FC = () => {
-    const [currentPpl, setCurrentPpl] = useState<PersonData[] | undefined>();
-    const [defaultPpl, setDefaultPpl] = useState<PersonData[] | undefined>();
-    const [tempDefPpl, setTempDefPpl] = useState<PersonData[] | undefined>();
+    const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
+    const [defaultPpl, setDefaultPpl] = useState<PersonData[]>([]);
+    const [tempDefPpl, setTempDefPpl] = useState<PersonData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [currModified, setCurrModified] = useState(false);
     const [tempModified, setTempModified] = useState(false);
 
-    const initPpl = async () => {
-        setCurrentPpl(await getCurrentPpl());
-        setDefaultPpl(await getDefaultPpl());
-    };
+    const initPpl = useCallback(async () => {
+        console.log("Starting data fetch");
+        try {
+            const data = await getPeople();
+            setCurrentPpl(data.currentPeople);
+            setDefaultPpl(data.defaultPeople);
+        } catch (error) {
+            console.error("Fetch failed:", error);
+        }
+    }, []);
 
     const startEditing = () => {
         if (isEditing) {
@@ -125,6 +127,7 @@ const Home: React.FC = () => {
     };
 
     const editingPeople = useMemo(() => {
+        if (defaultPpl.length == 0) return;
         return tempDefPpl?.map((person) => (
             <Person
                 key={person.id}
@@ -138,6 +141,7 @@ const Home: React.FC = () => {
     }, [tempDefPpl, handleStatusChange, handleNameChange]);
 
     const currentPeople = useMemo(() => {
+        if (currentPpl.length == 0) return;
         return currentPpl?.map((person) => (
             <Person
                 key={person.id}
@@ -152,15 +156,15 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         initPpl();
-    }, []);
+    }, [initPpl]);
 
     useEffect(() => {
-        console.log("currentPpl", currentPpl);
+        console.log("CurrentPpl updated:", currentPpl);
     }, [currentPpl]);
 
     useEffect(() => {
-        console.log("tempDefPpl", tempDefPpl);
-    }, [tempDefPpl]);
+        console.log("DefaultPpl updated:", defaultPpl);
+    }, [defaultPpl]);
 
     return (
         <main>

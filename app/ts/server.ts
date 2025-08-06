@@ -1,34 +1,19 @@
+import { get } from "@vercel/edge-config";
+import { NextResponse } from "next/server";
+
 import { PersonData } from "../types";
 import { generateId } from "./helper";
 
-async function getCurrentPpl() {
-    return [
-        {
-            id: generateId(),
-            name: "John Doe",
-            status: "Serving",
-        },
-        {
-            id: generateId(),
-            name: "Jane Smith",
-            status: "Core",
-        },
-    ];
-}
+export const runtime = "edge"; // Use Edge Runtime
 
-async function getDefaultPpl() {
-    return [
-        {
-            id: generateId(),
-            name: "Michael Johnson",
-            status: "Sitting",
-        },
-        {
-            id: generateId(),
-            name: "Emily Davis",
-            status: "Others",
-        },
-    ];
+async function getPeople() {
+    try {
+        const res = await fetch("http://localhost:3000/people");
+        const people = await res.json();
+        return people;
+    } catch (error) {
+        console.error("Error fetching people", error);
+    }
 }
 
 async function postCurrentPpl(data?: PersonData[]) {
@@ -39,4 +24,4 @@ async function postDefaultPpl(data?: PersonData[]) {
     console.log("Pending postDefaultPpl implementation");
 }
 
-export { getCurrentPpl, postCurrentPpl, getDefaultPpl, postDefaultPpl };
+export { getPeople, postCurrentPpl, postDefaultPpl };
