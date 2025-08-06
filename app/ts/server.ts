@@ -4,11 +4,11 @@ import { NextResponse } from "next/server";
 import { PersonData } from "../types";
 import { generateId } from "./helper";
 
-export const runtime = "edge"; // Use Edge Runtime
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 async function getPeople() {
     try {
-        const res = await fetch("https://wknd-attd.vercel.app/people");
+        const res = await fetch(`${baseUrl}/people`);
         const people = await res.json();
         return people;
     } catch (error) {
