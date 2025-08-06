@@ -1,1 +1,7 @@
-export const STATUSENUM = ["Sitting", "Others", "Serving", "Core", "Absent"];
+export const STATUSENUM = [
+    "Sitting",
+    "Others",
+    "Serving",
+    "Always Serving",
+    "Absent",
+];

@@ -164,8 +164,8 @@ const Home: React.FC = () => {
 
     return (
         <main>
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-4 space-y-7">
+            <div className="min-h-screen my-auto flex items-center justify-center">
+                <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-4 space-y-7 sm:my-10">
                     <header>
                         <p className="text-4xl font-bold text-slate-800 text-center">
                             Attendance Generator

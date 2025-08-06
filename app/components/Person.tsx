@@ -55,7 +55,7 @@ const Person: React.FC<PersonProps> = ({
 					${isEditing ? "text-blue-500" : "text-slate-700"}`}
             />
 
-            <div className="flex items-center justify-end w-full min-w-[135px] max-w-[180px]">
+            <div className="flex items-center justify-end w-full min-w-[135px] max-w-[200px]">
                 <select
                     id={"select_" + person.id}
                     value={person.status}
