@@ -85,7 +85,9 @@ function unicodeFormat(text: any, style: UnicodeStyle): any {
 	return _format(text);
 }
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
+const generateId = () => {
+	return Date.now().toString();
+};
 
 const copyGenerate = (currentPpl?: PersonData[]): void => {
 	if (!currentPpl) return;

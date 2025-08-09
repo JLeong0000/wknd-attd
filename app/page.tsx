@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { unicodeFormat, generateId, copyGenerate } from "./ts/helper";
-import { getPeople, postCurrentPpl, postDefaultPpl } from "./ts/server";
+import { generateId, copyGenerate } from "./ts/helper";
+import { getPeople, postCurrPpl, postDefPpl } from "./ts/server";
 import { IoPersonAddSharp } from "react-icons/io5";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Person from "./components/Person";
 import { PersonData } from "./types";
@@ -12,24 +13,19 @@ const Home: React.FC = () => {
 	const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
 	const [defaultPpl, setDefaultPpl] = useState<PersonData[]>([]);
 	const [tempDefPpl, setTempDefPpl] = useState<PersonData[]>([]);
+	const [isSaving, setIsSaving] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [currModified, setCurrModified] = useState(false);
 	const [tempModified, setTempModified] = useState(false);
 
 	const initPpl = useCallback(async () => {
-		console.log("Starting data fetch");
-		try {
-			const data = await getPeople();
-			setCurrentPpl(data.currentPeople);
-			setDefaultPpl(data.defaultPeople);
-		} catch (error) {
-			console.error("Fetch failed:", error);
-		}
+		const { currentPeople, defaultPeople } = await getPeople();
+		setCurrentPpl(currentPeople);
+		setDefaultPpl(defaultPeople);
 	}, []);
 
-	const startEditing = () => {
+	const toggleEditing = () => {
 		if (isEditing) {
-			setTempModified(false);
 			setIsEditing(false);
 		} else {
 			setTempDefPpl(defaultPpl);
@@ -37,20 +33,25 @@ const Home: React.FC = () => {
 		}
 	};
 
-	const resetCurrPpl = () => {
+	const resetCurrent = () => {
 		setCurrModified(true);
 		setCurrentPpl(defaultPpl);
 	};
 
 	const updateDefault = async (): Promise<void> => {
+		setIsSaving(true);
 		setDefaultPpl(tempDefPpl);
-		postDefaultPpl(tempDefPpl);
-		setIsEditing(false);
+
+		const saveStatus = await postDefPpl(tempDefPpl);
+		setIsSaving(false);
+		setIsEditing(!saveStatus);
 	};
 
 	const saveCurrent = async (): Promise<void> => {
+		setIsSaving(true);
 		setCurrModified(false);
-		postCurrentPpl(currentPpl);
+		await postCurrPpl(currentPpl);
+		setIsSaving(false);
 	};
 
 	const handleStatusChange = useCallback((id: string, newStatus: string, isEditing: boolean) => {
@@ -77,7 +78,7 @@ const Home: React.FC = () => {
 		const newPerson = {
 			id: generateId(),
 			name: "",
-			status: "Sitting",
+			status: "S2: Sitting",
 		};
 
 		if (isEditing) {
@@ -100,7 +101,7 @@ const Home: React.FC = () => {
 	};
 
 	const editingPeople = useMemo(() => {
-		if (defaultPpl.length == 0) return;
+		if (tempDefPpl.length == 0) return;
 		return tempDefPpl?.map(person => (
 			<Person
 				key={person.id}
@@ -131,14 +132,6 @@ const Home: React.FC = () => {
 		initPpl();
 	}, [initPpl]);
 
-	useEffect(() => {
-		console.log("CurrentPpl updated:", currentPpl);
-	}, [currentPpl]);
-
-	useEffect(() => {
-		console.log("DefaultPpl updated:", defaultPpl);
-	}, [defaultPpl]);
-
 	return (
 		<main>
 			<div className="min-h-screen my-auto flex items-center justify-center">
@@ -150,14 +143,14 @@ const Home: React.FC = () => {
 
 					<div className="flex gap-2">
 						<button
-							onClick={resetCurrPpl}
+							onClick={resetCurrent}
 							disabled={isEditing}
 							className={`w-full text-white font-bold py-2 px-4 rounded-lg ${isEditing ? "bg-zinc-700" : "bg-red-800 hover:bg-red-700 cursor-pointer"} `}
 						>
 							Reset
 						</button>
 						<button
-							onClick={() => startEditing()}
+							onClick={() => toggleEditing()}
 							className={`w-full bg-indigo-900 hover:bg-indigo-800 font-bold py-2 px-4 rounded-lg cursor-pointer 
 								${isEditing ? "text-blue-400" : "text-white"} `}
 						>
@@ -180,21 +173,21 @@ const Home: React.FC = () => {
 						<button
 							onClick={updateDefault}
 							disabled={!tempModified}
-							className={`w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-                                ${tempModified ? "bg-violet-600 hover:bg-violet-700" : "bg-zinc-700"}
+							className={`flex justify-center w-full text-white font-bold py-3 px-4 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                                ${tempModified ? "bg-violet-600 hover:bg-violet-700 active:scale-95 cursor-pointer" : "bg-zinc-700"}
                                 `}
 						>
-							Update Default
+							{isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Update Default"}
 						</button>
 					) : (
 						<div className="flex flex-col gap-2">
 							<button
 								onClick={saveCurrent}
 								disabled={!currModified}
-								className={`w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer bg-violet-600 hover:bg-violet-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-                                    ${currModified ? "bg-violet-600 hover:bg-violet-700" : "bg-zinc-700"}`}
+								className={`flex justify-center w-full text-white font-bold py-3 px-4 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                                    ${currModified ? "bg-violet-600 hover:bg-violet-700 active:scale-95 cursor-pointer" : "bg-zinc-700"}`}
 							>
-								Save Current
+								{isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Save"}
 							</button>
 							<button
 								onClick={() => copyGenerate(currentPpl)}

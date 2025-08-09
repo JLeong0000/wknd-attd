@@ -1,27 +1,89 @@
-import { get } from "@vercel/edge-config";
-import { NextResponse } from "next/server";
-
+import { supabase } from "../lib/supabaseClient";
 import { PersonData } from "../types";
-import { generateId } from "./helper";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+// Get all people
+export const getPeople = async () => {
+	const { data: currentPeople, error: errorCurr } = await supabase.from("current_people").select("*");
+	const { data: defaultPeople, error: errorDef } = await supabase.from("default_people").select("*");
 
-async function getPeople() {
-    try {
-        const res = await fetch(`${baseUrl}/people`);
-        const people = await res.json();
-        return people;
-    } catch (error) {
-        console.error("Error fetching people", error);
-    }
-}
+	if (errorCurr) throw errorCurr;
+	if (errorDef) throw errorDef;
 
-async function postCurrentPpl(data?: PersonData[]) {
-    console.log("Pending postCurrentPpl implementation");
-}
+	return {
+		currentPeople: currentPeople || [],
+		defaultPeople: defaultPeople || [],
+	};
+};
 
-async function postDefaultPpl(data?: PersonData[]) {
-    console.log("Pending postDefaultPpl implementation");
-}
+// Insert 1 into current people
+export const addOneCurrPpl = async (person: PersonData) => {
+	const { data, error } = await supabase.from("current_people").insert(person).select();
 
-export { getPeople, postCurrentPpl, postDefaultPpl };
+	error ? console.error("Error inserting: " + person.name, error) : console.log("Inserted:", person.name);
+};
+
+// Update 1 from current people
+export const updateOneCurrPpl = async (person: PersonData) => {
+	const { data, error } = await supabase.from("current_people").update(person).eq("id", person.id).select();
+
+	error ? console.error("Error updating: " + person.name, error) : console.log("Updated:", person.name);
+};
+
+// Delete 1 from current people
+export const deleteOneCurrPpl = async (id: string) => {
+	const { data, error } = await supabase.from("current_people").delete().eq("id", id);
+
+	error ? console.error("Error deleting: " + data, error) : console.log("Deleted:", data);
+};
+
+// Reset current people
+export const postCurrPpl = async (people: PersonData[]) => {
+	// Clear table first
+	await supabase.from("current_people").delete().neq("id", 0);
+
+	const { data, error } = await supabase.from("current_people").insert(people).select();
+
+	if (error) {
+		console.error("Error saving current people", people, error);
+		alert("Failed to save");
+		return false;
+	} else {
+		console.log("Successfully reset current people");
+		return true;
+	}
+};
+
+// Save default people
+export const postDefPpl = async (people: PersonData[]) => {
+	// Clear table first
+	await supabase.from("default_people").delete().neq("id", 0);
+
+	const { data, error } = await supabase.from("default_people").insert(people).select();
+
+	if (error) {
+		console.error("Error saving default people", people, error);
+		alert("Failed to save");
+		return false;
+	} else {
+		console.log("Successfully reset default people");
+		return true;
+	}
+};
+
+export const currentPplSBListener = async () => {
+	const channels = supabase
+		.channel("custom-insert-channel")
+		.on("postgres_changes", { event: "INSERT", schema: "public", table: "current_people" }, payload => {
+			console.log("Current people table updated", payload);
+		})
+		.subscribe();
+};
+
+export const defaultPplSBListener = async () => {
+	const channels = supabase
+		.channel("custom-insert-channel")
+		.on("postgres_changes", { event: "INSERT", schema: "public", table: "default_people" }, payload => {
+			console.log("Default people table updated", payload);
+		})
+		.subscribe();
+};
