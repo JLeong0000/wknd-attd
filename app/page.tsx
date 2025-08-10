@@ -19,6 +19,7 @@ const Home: React.FC = () => {
     const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
     const [defaultPpl, setDefaultPpl] = useState<PersonData[]>([]);
     const [tempDefPpl, setTempDefPpl] = useState<PersonData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currModified, setCurrModified] = useState(false);
@@ -34,6 +35,8 @@ const Home: React.FC = () => {
         const { currentPeople, defaultPeople } = await getPeople();
         setCurrentPpl(currentPeople);
         setDefaultPpl(defaultPeople);
+
+        setIsLoading(false);
     }, []);
 
     const toggleEditing = () => {
@@ -213,6 +216,11 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="space-y-3">
+                        {isLoading && (
+                            <div className="flex items-center justify-center px-3 py-4 text-zinc-600 tracking-widest text-xs font-bold bg-slate-300 rounded-lg border border-slate-200 animate-pulse">
+                                FETCHING PEOPLE FROM MRT
+                            </div>
+                        )}
                         {isEditing ? editingPeople : currentPeople}
 
                         <button
