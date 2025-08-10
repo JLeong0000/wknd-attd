@@ -101,7 +101,7 @@ export const currentPplChangeListener = async () => {
         .channel("currentPpl-channel")
         .on(
             "postgres_changes",
-            { event: "*", schema: "public", table: "current_people" },
+            { event: "DELETE", schema: "public", table: "current_people" },
             (payload) => {
                 alert("Current people has been updated. Please reload page ✨");
                 console.log("Current people table updated", payload);
@@ -115,7 +115,7 @@ export const defaultPplChangeListener = async () => {
         .channel("defaultPpl-channel")
         .on(
             "postgres_changes",
-            { event: "*", schema: "public", table: "default_people" },
+            { event: "DELETE", schema: "public", table: "default_people" },
             (payload) => {
                 alert("Default people has been updated. Please reload page ✨");
                 console.log("Default people table updated", payload);
