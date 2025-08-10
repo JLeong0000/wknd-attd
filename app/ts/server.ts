@@ -58,7 +58,12 @@ export const deleteOneCurrPpl = async (id: string) => {
 };
 
 // Reset current people
-export const postCurrPpl = async (people: PersonData[]) => {
+export const postCurrPpl = async (
+    people: PersonData[],
+    changeBuffer: ChangeBuffer
+) => {
+    changeBuffer.origin = true;
+
     // Clear table first
     await supabase.from("current_people").delete().neq("id", 0);
 
@@ -78,7 +83,12 @@ export const postCurrPpl = async (people: PersonData[]) => {
 };
 
 // Save default people
-export const postDefPpl = async (people: PersonData[]) => {
+export const postDefPpl = async (
+    people: PersonData[],
+    changeBuffer: ChangeBuffer
+) => {
+    changeBuffer.origin = true;
+
     // Clear table first
     await supabase.from("default_people").delete().neq("id", 0);
 
@@ -101,8 +111,12 @@ export const SupabaseChangeListener = (changeBuffer: ChangeBuffer) => {
     const processChanges = () => {
         if (changeBuffer.payloads.length > 0) {
             console.log("Batch changes detected:", changeBuffer.payloads);
-            alert("Data has been updated. Please reload page ✨");
-            changeBuffer.payloads = [];
+
+            if (!changeBuffer.origin) {
+                alert("Data has been updated. Please reload page ✨");
+                changeBuffer.payloads = [];
+                changeBuffer.origin = false;
+            }
         }
     };
 

@@ -14,7 +14,6 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Person from "./components/Person";
 import { ChangeBuffer, PersonData } from "./types";
 import { supabase } from "./lib/supabaseClient";
-import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 const Home: React.FC = () => {
     const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
@@ -28,6 +27,7 @@ const Home: React.FC = () => {
     const [changeBuffer] = useState<ChangeBuffer>({
         timer: null,
         payloads: [],
+        origin: false,
     });
 
     const initPpl = useCallback(async () => {
@@ -54,7 +54,7 @@ const Home: React.FC = () => {
         setIsSaving(true);
         setDefaultPpl(tempDefPpl);
 
-        const saveStatus = await postDefPpl(tempDefPpl);
+        const saveStatus = await postDefPpl(tempDefPpl, changeBuffer);
         setIsSaving(false);
         setIsEditing(!saveStatus);
     };
@@ -62,7 +62,7 @@ const Home: React.FC = () => {
     const saveCurrent = async (): Promise<void> => {
         setIsSaving(true);
         setCurrModified(false);
-        await postCurrPpl(currentPpl);
+        await postCurrPpl(currentPpl, changeBuffer);
         setIsSaving(false);
     };
 

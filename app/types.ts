@@ -9,4 +9,5 @@ export interface PersonData {
 export type ChangeBuffer = {
     timer: NodeJS.Timeout | null;
     payloads: RealtimePostgresChangesPayload<{ [key: string]: any }>[];
+    origin: boolean;
 };
