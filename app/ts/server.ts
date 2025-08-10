@@ -1,5 +1,6 @@
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
-import { PersonData } from "../types";
+import { ChangeBuffer, PersonData } from "../types";
 
 // Get all people
 export const getPeople = async () => {
@@ -96,29 +97,34 @@ export const postDefPpl = async (people: PersonData[]) => {
     }
 };
 
-export const currentPplChangeListener = async () => {
-    const channels = supabase
-        .channel("currentPpl-channel")
-        .on(
-            "postgres_changes",
-            { event: "DELETE", schema: "public", table: "current_people" },
-            (payload) => {
-                alert("Current people has been updated. Please reload page ✨");
-                console.log("Current people table updated", payload);
-            }
-        )
-        .subscribe();
-};
+export const SupabaseChangeListener = (changeBuffer: ChangeBuffer) => {
+    const processChanges = () => {
+        if (changeBuffer.payloads.length > 0) {
+            console.log("Batch changes detected:", changeBuffer.payloads);
+            alert("Data has been updated. Please reload page ✨");
+            changeBuffer.payloads = [];
+        }
+    };
 
-export const defaultPplChangeListener = async () => {
-    const channels = supabase
-        .channel("defaultPpl-channel")
+    return supabase
+        .channel("supabase-global-listener")
         .on(
             "postgres_changes",
-            { event: "DELETE", schema: "public", table: "default_people" },
+            {
+                event: "*",
+                schema: "public",
+            },
             (payload) => {
-                alert("Default people has been updated. Please reload page ✨");
-                console.log("Default people table updated", payload);
+                // Clear existing timer if it exists
+                if (changeBuffer.timer) {
+                    clearTimeout(changeBuffer.timer);
+                }
+
+                // Add new payload to buffer
+                changeBuffer.payloads.push(payload);
+
+                // Set new timer
+                changeBuffer.timer = setTimeout(processChanges, 500);
             }
         )
         .subscribe();

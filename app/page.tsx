@@ -6,14 +6,15 @@ import {
     getPeople,
     postCurrPpl,
     postDefPpl,
-    currentPplChangeListener,
-    defaultPplChangeListener,
+    SupabaseChangeListener,
 } from "./ts/server";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Person from "./components/Person";
-import { PersonData } from "./types";
+import { ChangeBuffer, PersonData } from "./types";
+import { supabase } from "./lib/supabaseClient";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 const Home: React.FC = () => {
     const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
@@ -23,6 +24,11 @@ const Home: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currModified, setCurrModified] = useState(false);
     const [tempModified, setTempModified] = useState(false);
+
+    const [changeBuffer] = useState<ChangeBuffer>({
+        timer: null,
+        payloads: [],
+    });
 
     const initPpl = useCallback(async () => {
         const { currentPeople, defaultPeople } = await getPeople();
@@ -162,9 +168,15 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         initPpl();
-        currentPplChangeListener();
-        defaultPplChangeListener();
-    }, [initPpl]);
+        const channel = SupabaseChangeListener(changeBuffer);
+
+        return () => {
+            if (channel) supabase.removeChannel(channel);
+            if (changeBuffer.timer) clearTimeout(changeBuffer.timer);
+        };
+
+        changeBuffer.payloads = [];
+    }, [initPpl, changeBuffer]);
 
     return (
         <main>
