@@ -14,9 +14,12 @@ export const getPeople = async () => {
     if (errorCurr) throw errorCurr;
     if (errorDef) throw errorDef;
 
+    const sortByName = (a: PersonData, b: PersonData) =>
+        a.name.localeCompare(b.name);
+
     return {
-        currentPeople: currentPeople || [],
-        defaultPeople: defaultPeople || [],
+        currentPeople: currentPeople.sort(sortByName) || [],
+        defaultPeople: defaultPeople.sort(sortByName) || [],
     };
 };
 
