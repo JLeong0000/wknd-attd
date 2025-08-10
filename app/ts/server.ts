@@ -115,8 +115,9 @@ export const SupabaseChangeListener = (changeBuffer: ChangeBuffer) => {
             if (!changeBuffer.origin) {
                 alert("Data has been updated. Please reload page ✨");
                 changeBuffer.payloads = [];
-                changeBuffer.origin = false;
             }
+
+            changeBuffer.origin = false;
         }
     };
 
