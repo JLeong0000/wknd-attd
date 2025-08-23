@@ -104,7 +104,7 @@ const copyGenerate = (currentPpl?: PersonData[]): void => {
 	const alwaysServing = currentPpl.filter(p => p.status === "Always Serving" && p.name).map(p => p.name);
 	if (serving.length > 0 || alwaysServing.length > 0) {
 		const allServing = [...serving, ...alwaysServing];
-		message += `Serving: (${allServing.length})\n- ${allServing.join(", ")}\n\n`;
+		message += `Serving: (${allServing.length})\n- ${serving.join(", ")}\n- ${alwaysServing.join(", ")}\n\n`;
 	}
 
 	// TBC
