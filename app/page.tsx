@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { generateId, copyGenerate } from "./ts/helper";
+import { generateId, unicodeFormat } from "./ts/helper";
 import { getPeople, postCurrPpl, postDefPpl, SupabaseChangeListener } from "./ts/server";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -83,6 +83,44 @@ const Home: React.FC = () => {
 			setCurrentPpl(prev => prev?.map(person => (person.id === id ? { ...person, name: newName } : person)));
 		}
 	}, []);
+
+	const copyGenerate = (currentPpl?: PersonData[]): void => {
+		saveCurrent();
+		if (!currentPpl) return;
+
+		const headerText = unicodeFormat("Attendance", "bold");
+		let message = headerText + "\n\n";
+
+		// Sitting Service 2
+		const sittingS2 = currentPpl.filter(p => p.status.includes("S2: Sitting") && p.name).map(p => p.name);
+		if (sittingS2.length > 0) message += `S2: (${sittingS2.length})\n- ${sittingS2.join(", ")}\n\n`;
+
+		// Serving
+		const serving = currentPpl.filter(p => p.status === "Serving" && p.name).map(p => p.name);
+		const alwaysServing = currentPpl.filter(p => p.status === "Always Serving" && p.name).map(p => p.name);
+		if (serving.length > 0 || alwaysServing.length > 0) {
+			const allServing = [...serving, ...alwaysServing];
+			message += `Serving: (${allServing.length})\n- ${serving.join(", ")}\n- ${alwaysServing.join(", ")}\n\n`;
+		}
+
+		// TBC
+		const tbc = currentPpl.filter(p => p.status === "TBC" && p.name).map(p => p.name);
+		if (tbc.length > 0) message += `TBC: (${tbc.length})\n- ${tbc.join(", ")}\n\n`;
+
+		// Others
+		const others = currentPpl.filter(p => p.status === "Others" && p.name).map(p => p.name);
+		if (others.length > 0) message += `OTH: (${others.length})\n- ${others.join(", ")}\n\n`;
+
+		// Sitting Service 1/3
+		const sittingS13 = currentPpl.filter(p => p.status.includes("S1: Sitting") || (p.status.includes("S3: Sitting") && p.name)).map(p => p.name);
+		if (sittingS13.length > 0) message += `S1/S3: (${sittingS13.length})\n- ${sittingS13.join(", ")}\n\n`;
+
+		// Copy message
+		navigator.clipboard.writeText(message.trim()).then(
+			() => alert("Message copied to clipboard!"),
+			err => console.error("Failed to copy message: ", err)
+		);
+	};
 
 	const addPerson = () => {
 		const newPerson = {
