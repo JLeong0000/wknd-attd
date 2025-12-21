@@ -9,6 +9,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Person from "./components/Person";
 import { ChangeBuffer, PersonData } from "./types";
 import { supabase } from "./lib/supabaseClient";
+import InstallPrompt from "./components/InstallPrompt";
 
 const Home: React.FC = () => {
 	const [currentPpl, setCurrentPpl] = useState<PersonData[]>([]);
@@ -190,9 +191,9 @@ const Home: React.FC = () => {
 
 	return (
 		<main>
-			<div className="min-h-screen my-auto flex items-center justify-center">
-				<div className="w-full bg-white rounded-xl shadow-lg p-4 space-y-7 max-w-lg md:max-w-4xl sm:my-10">
-					<header>
+			<div className="min-h-screen my-auto flex flex-col items-center justify-center">
+				<div className="w-full bg-white rounded-xl shadow-lg p-4 space-y-7 max-w-lg md:max-w-4xl sm:mt-10">
+					<header className="mt-2">
 						<p className="text-4xl font-bold text-slate-800 text-center">Attendance Generator</p>
 						<p className="text-center text-slate-500 mt-1">Update status for each person</p>
 					</header>
@@ -213,7 +214,6 @@ const Home: React.FC = () => {
 							{isEditing ? "Editing" : "Edit Default"}
 						</button>
 					</div>
-
 					<div className="space-y-3">
 						{isLoading && (
 							<div className="flex items-center justify-center px-3 py-4 text-zinc-600 tracking-widest text-xs font-bold bg-slate-300 rounded-lg border border-slate-200 animate-pulse">
@@ -259,6 +259,7 @@ const Home: React.FC = () => {
 						</div>
 					)}
 				</div>
+				<InstallPrompt />
 			</div>
 		</main>
 	);

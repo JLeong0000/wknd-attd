@@ -1,0 +1,15 @@
+{
+	"theme_color": "#6200eb",
+	"background_color": "#2a1b31",
+	"icons": [
+		{ "sizes": "512x512", "src": "icon512_maskable.png", "type": "image/png" },
+		{ "sizes": "512x512", "src": "icon512_rounded.png", "type": "image/png" }
+	],
+	"orientation": "portrait",
+	"display": "standalone",
+	"dir": "auto",
+	"lang": "en",
+	"name": "Wknd Attd Gen",
+	"short_name": "WAGen",
+	"start_url": "/"
+}
