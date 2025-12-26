@@ -26,3 +26,34 @@ The application is built with:
 -   **Styling**: Tailwind CSS for responsive design
 -   **Icons**: React Icons for consistent UI elements
 -   **State Management**: React hooks (useState, useEffect, useCallback, useMemo)
+
+## How It Works
+
+1. **Initialization**: The app fetches both current attendance data and default member lists from Supabase
+2. **Status Updates**: Users can update each person's name and attendance status
+3. **Data Persistence**: Changes are saved to Supabase with a buffering system to optimize network requests
+4. **Report Generation**: Clicking "Generate Message" creates a formatted attendance report and copies it to clipboard
+
+## Project Structure
+
+-   `/components/`: Reusable React components (Person, InstallPrompt)
+-   `/lib/`: Supabase client configuration
+-   `/ts/`: TypeScript helper functions and server communication logic
+-   `/types/`: TypeScript type definitions
+
+## Key Functions
+
+-   `copyGenerate()`: Formats attendance data into a structured message with Unicode bold formatting
+-   `SupabaseChangeListener()`: Manages real-time updates across connected clients
+-   `postCurrPpl()` & `postDefPpl()`: Handle data persistence with request buffering
+
+## Learning Outcomes
+
+This project demonstrates my understanding of:
+
+-   Full-stack development with React and Supabase
+-   Real-time data synchronization
+-   Progressive Web App implementation
+-   TypeScript for type safety
+-   Responsive UI design with Tailwind CSS
+-   Efficient state management in React applications
