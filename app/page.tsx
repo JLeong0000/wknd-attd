@@ -121,7 +121,7 @@ const Home: React.FC = () => {
 		// Copy message
 		navigator.clipboard.writeText(message.trim()).then(
 			() => alert("Message copied to clipboard!"),
-			err => console.error("Failed to copy message: ", err)
+			err => console.error("Failed to copy message: ", err),
 		);
 	};
 
@@ -166,11 +166,11 @@ const Home: React.FC = () => {
 			}
 		} else {
 			// Sort by name
-			setCurrentPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
-			setDefaultPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
+			setCurrentPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
+			setDefaultPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
 
 			if (tempDefPpl.length > 0) {
-				setTempDefPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
+				setTempDefPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
 			}
 		}
 
