@@ -20,6 +20,7 @@ const Home: React.FC = () => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [currModified, setCurrModified] = useState(false);
 	const [tempModified, setTempModified] = useState(false);
+	const [sortBy, setSortBy] = useState<"name" | "status">("name");
 
 	const [changeBuffer] = useState<ChangeBuffer>({
 		timer: null,
@@ -33,6 +34,7 @@ const Home: React.FC = () => {
 		setDefaultPpl(defaultPeople);
 
 		setIsLoading(false);
+		setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
 	}, []);
 
 	const toggleEditing = () => {
@@ -149,6 +151,33 @@ const Home: React.FC = () => {
 		}
 	};
 
+	const handleSort = () => {
+		const newSortBy = sortBy === "name" ? "status" : "name";
+		setSortBy(newSortBy);
+
+		// Create new sorted arrays without mutating the originals
+		if (newSortBy === "status") {
+			// Sort by status
+			setCurrentPpl(prev => [...prev].sort((a, b) => a.status.localeCompare(b.status)).reverse());
+			setDefaultPpl(prev => [...prev].sort((a, b) => a.status.localeCompare(b.status)).reverse());
+
+			if (tempDefPpl.length > 0) {
+				setTempDefPpl(prev => [...prev].sort((a, b) => a.status.localeCompare(b.status)).reverse());
+			}
+		} else {
+			// Sort by name
+			setCurrentPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
+			setDefaultPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
+
+			if (tempDefPpl.length > 0) {
+				setTempDefPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)).reverse());
+			}
+		}
+
+		console.log(`Sorted by ${newSortBy}`);
+		setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+	};
+
 	const editingPeople = useMemo(() => {
 		if (tempDefPpl.length == 0) return;
 		return tempDefPpl?.map(person => (
@@ -179,6 +208,7 @@ const Home: React.FC = () => {
 
 	useEffect(() => {
 		initPpl();
+
 		const channel = SupabaseChangeListener(changeBuffer);
 
 		return () => {
@@ -192,7 +222,7 @@ const Home: React.FC = () => {
 	return (
 		<main>
 			<div className="min-h-screen my-auto flex flex-col items-center justify-center">
-				<div className="w-full bg-white rounded-xl shadow-lg p-4 space-y-7 max-w-lg md:max-w-4xl sm:mt-10">
+				<div className="w-full bg-white rounded-xl shadow-lg p-4 space-y-6 max-w-lg md:max-w-4xl sm:mt-10">
 					<header className="mt-2">
 						<p className="text-4xl font-bold text-slate-800 text-center">Attendance Generator</p>
 						<p className="text-center text-slate-500 mt-1">Update status for each person</p>
@@ -212,6 +242,16 @@ const Home: React.FC = () => {
 								${isEditing ? "text-blue-400" : "text-white"} `}
 						>
 							{isEditing ? "Editing" : "Edit Default"}
+						</button>
+					</div>
+					<div className="flex items-center gap-4 justify-center text-neutral-600">
+						<span className="font-semibold text-sm">SORT BY</span>
+						<button
+							onClick={handleSort}
+							id="sortBtn"
+							className="w-full max-w-[150px] capitalize font-bold py-2 px-4 rounded-lg bg-zinc-300 hover:bg-zinc-400 cursor-pointer"
+						>
+							{sortBy}
 						</button>
 					</div>
 					<div className="space-y-3">
