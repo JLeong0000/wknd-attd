@@ -15,6 +15,7 @@ interface PersonProps {
     handleNameChange: (id: string, newName: string, isEditing: boolean) => void;
     deletePerson: (id: string) => void;
     isEditing: boolean;
+    autoFocus?: boolean;
 }
 
 const Person: React.FC<PersonProps> = ({
@@ -23,6 +24,7 @@ const Person: React.FC<PersonProps> = ({
     handleNameChange,
     deletePerson,
     isEditing,
+    autoFocus,
 }) => {
     const handleNameChangeEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
         handleNameChange(person.id, e.target.value, isEditing);
@@ -44,8 +46,8 @@ const Person: React.FC<PersonProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (inputRef.current) inputRef.current.focus();
-    }, [person.name]);
+        if (autoFocus && inputRef.current) inputRef.current.focus();
+    }, [autoFocus]);
 
     return (
         <div

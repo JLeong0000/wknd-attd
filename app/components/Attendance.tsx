@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { generateId, unicodeFormat } from "../ts/helper";
 import { getPeople, postCurrPpl, postDefPpl, SupabaseChangeListener } from "../ts/server";
-import { IoPersonAddSharp, IoChevronForward, IoSearch, IoCloseCircle } from "react-icons/io5";
+import { IoPersonAddSharp, IoChevronForward, IoSearch, IoCloseCircle, IoMoon, IoSunny } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Person from "./Person";
@@ -27,6 +27,8 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const [tempModified, setTempModified] = useState(false);
     const [sortBy, setSortBy] = useState<"name" | "status">("name");
     const [search, setSearch] = useState("");
+    const [focusId, setFocusId] = useState<string | null>(null);
+    const [theme, setTheme] = useState<"light" | "dark">("light");
 
     const [changeBuffer] = useState<ChangeBuffer>({
         timer: null,
@@ -40,7 +42,6 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
         setCurrentPpl(currentPeople);
         setDefaultPpl(defaultPeople);
         setIsLoading(false);
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
     }, [groupKey]);
 
     const toggleEditing = () => {
@@ -127,6 +128,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const addPerson = () => {
         setSearch("");
         const newPerson = { id: generateId(), name: "", status: "S2: Sitting" };
+        setFocusId(newPerson.id);
         if (isEditing) {
             setTempModified(true);
             setTempDefPpl(prev => [...(prev || []), newPerson]);
@@ -159,8 +161,6 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
             setDefaultPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
             if (tempDefPpl.length > 0) setTempDefPpl(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
         }
-
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     };
 
     const filteredPeople = useMemo(() => {
@@ -168,6 +168,19 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
         const q = search.trim().toLowerCase();
         return q ? source.filter(p => p.name.toLowerCase().includes(q)) : source;
     }, [isEditing, tempDefPpl, currentPpl, search]);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("wknd-attd:theme") as "light" | "dark" | null;
+        const initial = stored ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        setTheme(initial);
+    }, []);
+
+    const toggleTheme = () => {
+        const next = theme === "dark" ? "light" : "dark";
+        setTheme(next);
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem("wknd-attd:theme", next);
+    };
 
     useEffect(() => {
         initPpl();
@@ -201,13 +214,22 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
                         <span className="inline-flex items-center rounded-full bg-accent-fill text-accent px-3 py-1 text-[13px] font-bold tracking-wide uppercase">
                             {groupLabel}
                         </span>
-                        <button
-                            onClick={onSwitchGroup}
-                            className="inline-flex items-center gap-0.5 text-accent text-[15px] font-medium hover:opacity-70 transition-opacity cursor-pointer"
-                        >
-                            Switch
-                            <IoChevronForward className="text-sm" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={toggleTheme}
+                                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                                className="flex items-center justify-center w-9 h-9 rounded-full text-label-secondary hover:bg-fill-secondary hover:text-label transition-colors cursor-pointer"
+                            >
+                                {theme === "dark" ? <IoSunny className="text-lg" /> : <IoMoon className="text-[17px]" />}
+                            </button>
+                            <button
+                                onClick={onSwitchGroup}
+                                className="inline-flex items-center gap-0.5 text-accent text-[15px] font-medium hover:opacity-70 transition-opacity cursor-pointer"
+                            >
+                                Switch
+                                <IoChevronForward className="text-sm" />
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <h1 className="font-heading text-[34px] leading-tight font-extrabold tracking-tight text-label">
@@ -275,6 +297,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
                                 handleNameChange={handleNameChange}
                                 deletePerson={deletePerson}
                                 isEditing={isEditing}
+                                autoFocus={person.id === focusId}
                             />
                         ))}
                         {filteredPeople.length === 0 && search.trim() !== "" && (

@@ -18,8 +18,10 @@
     --fill-secondary-hover: rgba(120, 120, 128, 0.2);
 }
 
+/* Dark appearance: applied automatically when the OS prefers dark AND the
+   user hasn't made an explicit choice, or whenever data-theme="dark" is set. */
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme]) {
         --app-bg: #000000;
         --surface: #1c1c1e;
         --surface-secondary: #2c2c2e;
@@ -35,6 +37,23 @@
         --fill-secondary: rgba(120, 120, 128, 0.24);
         --fill-secondary-hover: rgba(120, 120, 128, 0.36);
     }
+}
+
+:root[data-theme="dark"] {
+    --app-bg: #000000;
+    --surface: #1c1c1e;
+    --surface-secondary: #2c2c2e;
+    --label: #ffffff;
+    --label-secondary: rgba(235, 235, 245, 0.6);
+    --separator: rgba(84, 84, 88, 0.5);
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --accent-fill: rgba(10, 132, 255, 0.22);
+    --on-accent: #ffffff;
+    --destructive: #ff453a;
+    --destructive-hover: #ff6961;
+    --fill-secondary: rgba(120, 120, 128, 0.24);
+    --fill-secondary-hover: rgba(120, 120, 128, 0.36);
 }
 
 @theme inline {

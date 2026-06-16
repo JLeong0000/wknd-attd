@@ -66,7 +66,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
+			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `try{var t=localStorage.getItem('wknd-attd:theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}`,
+					}}
+				/>
+			</head>
 			<body className={`${display.variable} antialiased`}>{children}</body>
 		</html>
 	);
