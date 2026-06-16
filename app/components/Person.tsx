@@ -50,7 +50,7 @@ const Person: React.FC<PersonProps> = ({
     return (
         <div
             key={"container_" + person.id}
-            className="flex items-center justify-between gap-2 px-4 min-h-[52px]"
+            className="flex items-center justify-between gap-2 px-3.5 min-h-[56px] rounded-xl bg-surface border border-separator shadow-sm"
         >
             <input
                 ref={inputRef}

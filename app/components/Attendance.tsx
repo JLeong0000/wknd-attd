@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { generateId, unicodeFormat } from "../ts/helper";
 import { getPeople, postCurrPpl, postDefPpl, SupabaseChangeListener } from "../ts/server";
-import { IoPersonAddSharp, IoChevronForward } from "react-icons/io5";
+import { IoPersonAddSharp, IoChevronForward, IoSearch, IoCloseCircle } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Person from "./Person";
@@ -26,6 +26,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const [currModified, setCurrModified] = useState(false);
     const [tempModified, setTempModified] = useState(false);
     const [sortBy, setSortBy] = useState<"name" | "status">("name");
+    const [search, setSearch] = useState("");
 
     const [changeBuffer] = useState<ChangeBuffer>({
         timer: null,
@@ -124,6 +125,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     };
 
     const addPerson = () => {
+        setSearch("");
         const newPerson = { id: generateId(), name: "", status: "S2: Sitting" };
         if (isEditing) {
             setTempModified(true);
@@ -161,33 +163,11 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
         setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     };
 
-    const editingPeople = useMemo(() => {
-        if (tempDefPpl.length === 0) return;
-        return tempDefPpl.map(person => (
-            <Person
-                key={person.id}
-                person={person}
-                handleStatusChange={handleStatusChange}
-                handleNameChange={handleNameChange}
-                deletePerson={deletePerson}
-                isEditing={true}
-            />
-        ));
-    }, [tempDefPpl, handleStatusChange, handleNameChange]);
-
-    const currentPeople = useMemo(() => {
-        if (currentPpl.length === 0) return;
-        return currentPpl.map(person => (
-            <Person
-                key={person.id}
-                person={person}
-                handleStatusChange={handleStatusChange}
-                handleNameChange={handleNameChange}
-                deletePerson={deletePerson}
-                isEditing={false}
-            />
-        ));
-    }, [currentPpl, handleStatusChange, handleNameChange]);
+    const filteredPeople = useMemo(() => {
+        const source = isEditing ? tempDefPpl : currentPpl;
+        const q = search.trim().toLowerCase();
+        return q ? source.filter(p => p.name.toLowerCase().includes(q)) : source;
+    }, [isEditing, tempDefPpl, currentPpl, search]);
 
     useEffect(() => {
         initPpl();
@@ -215,7 +195,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
 
     return (
         <main className="min-h-screen flex flex-col items-center px-5 py-8 bg-app">
-            <div className="w-full max-w-md space-y-6">
+            <div className="w-full max-w-md md:max-w-4xl space-y-6">
                 <header className="space-y-3 px-1">
                     <div className="flex items-center justify-between">
                         <span className="inline-flex items-center rounded-full bg-accent-fill text-accent px-3 py-1 text-[13px] font-bold tracking-wide uppercase">
@@ -255,28 +235,62 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
                     </button>
                 </div>
 
-                <div className="flex items-center justify-center">
-                    <div className="inline-flex items-center gap-1 p-1 rounded-full bg-fill-secondary">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+                    <div className="relative flex-1">
+                        <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-label-secondary text-lg pointer-events-none" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder="Search"
+                            className="w-full h-11 pl-10 pr-10 rounded-xl bg-fill-secondary text-label text-[15px] outline-none placeholder:text-label-secondary focus:ring-2 focus:ring-accent"
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                aria-label="Clear search"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-label-secondary hover:text-label cursor-pointer"
+                            >
+                                <IoCloseCircle className="text-lg" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="inline-flex items-center gap-1 p-1 rounded-full bg-fill-secondary self-center sm:self-auto">
                         {segment("name", "Name")}
                         {segment("status", "Status")}
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[20px] bg-surface shadow-sm divide-y divide-separator">
-                    {isLoading && (
-                        <div className="px-4 py-4 text-center text-[12px] font-bold tracking-widest text-label-secondary animate-pulse">
-                            FETCHING PEOPLE FROM MRT
-                        </div>
-                    )}
-                    {isEditing ? editingPeople : currentPeople}
-                    <button
-                        onClick={addPerson}
-                        className="flex items-center gap-2 w-full px-4 min-h-[52px] text-accent text-[17px] font-medium hover:bg-fill-secondary transition-colors cursor-pointer"
-                    >
-                        <IoPersonAddSharp className="text-xl" />
-                        Add person
-                    </button>
-                </div>
+                {isLoading ? (
+                    <div className="rounded-2xl bg-surface shadow-sm px-4 py-5 text-center text-[12px] font-bold tracking-widest text-label-secondary animate-pulse">
+                        FETCHING PEOPLE FROM MRT
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        {filteredPeople.map(person => (
+                            <Person
+                                key={person.id}
+                                person={person}
+                                handleStatusChange={handleStatusChange}
+                                handleNameChange={handleNameChange}
+                                deletePerson={deletePerson}
+                                isEditing={isEditing}
+                            />
+                        ))}
+                        {filteredPeople.length === 0 && search.trim() !== "" && (
+                            <div className="md:col-span-2 text-center text-label-secondary text-[15px] py-8">
+                                No one matches “{search.trim()}”
+                            </div>
+                        )}
+                        <button
+                            onClick={addPerson}
+                            className="md:col-span-2 flex items-center justify-center gap-2 w-full min-h-[52px] rounded-xl border border-separator bg-surface text-accent text-[16px] font-medium hover:bg-fill-secondary transition-colors cursor-pointer"
+                        >
+                            <IoPersonAddSharp className="text-xl" />
+                            Add person
+                        </button>
+                    </div>
+                )}
 
                 {isEditing ? (
                     <button
