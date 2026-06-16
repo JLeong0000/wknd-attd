@@ -21,19 +21,20 @@ function InstallPrompt() {
 	}, []);
 
 	if (isStandalone || !isMobile) {
-		return null; // Don't show install button if already installed
+		return null; // Don't show install prompt if already installed
 	}
 
 	return (
-		<div className="mx-auto max-w-[400px] text-center mt-6 mb-14">
-			<button className="w-full text-white p-4 rounded-lg bg-green-600 hover:bg-green-700 cursor-pointer">
-				<span className="font-bold">Add app to Home Screen</span>
+		<div className="mx-auto w-full max-w-md px-5 pb-12">
+			<div className="rounded-2xl bg-surface border border-separator shadow-sm p-4 text-center">
+				<p className="font-semibold text-label text-[15px]">Add app to Home Screen</p>
 				{isIOS && (
-					<p className="mt-2">
-						To install this app on your iOS device, tap the share button <MdOutlineIosShare className="inline" /> and then "Add to Home Screen"
+					<p className="mt-1.5 text-label-secondary text-[14px] leading-snug">
+						Tap the share button{" "}
+						<MdOutlineIosShare className="inline align-middle text-accent" /> then “Add to Home Screen”
 					</p>
 				)}
-			</button>
+			</div>
 		</div>
 	);
 }

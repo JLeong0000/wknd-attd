@@ -39,6 +39,9 @@ yarn-error.log*
 # local planning docs
 /plans
 
+# playwright mcp output
+/.playwright-mcp
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

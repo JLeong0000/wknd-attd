@@ -1,28 +1,87 @@
 @import "tailwindcss";
 
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    /* iOS-style light appearance */
+    --app-bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface-secondary: #f2f2f7;
+    --label: #1c1c1e;
+    --label-secondary: #6c6c70;
+    --separator: rgba(60, 60, 67, 0.18);
+    --accent: #007aff;
+    --accent-hover: #0066d6;
+    --accent-fill: rgba(0, 122, 255, 0.12);
+    --on-accent: #ffffff;
+    --destructive: #ff3b30;
+    --destructive-hover: #e0352b;
+    --fill-secondary: rgba(120, 120, 128, 0.12);
+    --fill-secondary-hover: rgba(120, 120, 128, 0.2);
 }
 
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
-}
-
+/* Dark appearance: applied automatically when the OS prefers dark AND the
+   user hasn't made an explicit choice, or whenever data-theme="dark" is set. */
 @media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
+    :root:not([data-theme]) {
+        --app-bg: #000000;
+        --surface: #1c1c1e;
+        --surface-secondary: #2c2c2e;
+        --label: #ffffff;
+        --label-secondary: rgba(235, 235, 245, 0.6);
+        --separator: rgba(84, 84, 88, 0.5);
+        --accent: #0a84ff;
+        --accent-hover: #409cff;
+        --accent-fill: rgba(10, 132, 255, 0.22);
+        --on-accent: #ffffff;
+        --destructive: #ff453a;
+        --destructive-hover: #ff6961;
+        --fill-secondary: rgba(120, 120, 128, 0.24);
+        --fill-secondary-hover: rgba(120, 120, 128, 0.36);
     }
 }
 
+:root[data-theme="dark"] {
+    --app-bg: #000000;
+    --surface: #1c1c1e;
+    --surface-secondary: #2c2c2e;
+    --label: #ffffff;
+    --label-secondary: rgba(235, 235, 245, 0.6);
+    --separator: rgba(84, 84, 88, 0.5);
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --accent-fill: rgba(10, 132, 255, 0.22);
+    --on-accent: #ffffff;
+    --destructive: #ff453a;
+    --destructive-hover: #ff6961;
+    --fill-secondary: rgba(120, 120, 128, 0.24);
+    --fill-secondary-hover: rgba(120, 120, 128, 0.36);
+}
+
+@theme inline {
+    --color-app: var(--app-bg);
+    --color-surface: var(--surface);
+    --color-surface-secondary: var(--surface-secondary);
+    --color-label: var(--label);
+    --color-label-secondary: var(--label-secondary);
+    --color-separator: var(--separator);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-fill: var(--accent-fill);
+    --color-on-accent: var(--on-accent);
+    --color-destructive: var(--destructive);
+    --color-destructive-hover: var(--destructive-hover);
+    --color-fill-secondary: var(--fill-secondary);
+    --color-fill-secondary-hover: var(--fill-secondary-hover);
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+    --font-heading: var(--font-bricolage), -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+}
+
 body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    background: var(--app-bg);
+    color: var(--label);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
 }
 
 .min-h-screen {
