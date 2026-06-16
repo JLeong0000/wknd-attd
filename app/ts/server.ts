@@ -5,7 +5,7 @@ export const getGroups = async (): Promise<Group[]> => {
     const { data, error } = await supabase
         .from("groups")
         .select("*")
-        .order("sort_order");
+        .order("label", { ascending: true });
 
     if (error) throw error;
     return data ?? [];
