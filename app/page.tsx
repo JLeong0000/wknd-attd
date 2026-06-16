@@ -19,29 +19,32 @@ const HomeInner: React.FC = () => {
     useEffect(() => {
         const urlKey = searchParams.get("group");
 
-        getGroups().then(groups => {
-            const find = (key: string | null) => groups.find(g => g.key === key) ?? null;
+        getGroups()
+            .then(groups => {
+                const find = (key: string | null) => groups.find(g => g.key === key) ?? null;
 
-            // URL param takes priority, then cached selection
-            const fromUrl = find(urlKey);
-            if (fromUrl) {
-                setActiveGroup(fromUrl);
+                const fromUrl = find(urlKey);
+                if (fromUrl) {
+                    setActiveGroup(fromUrl);
+                    setResolved(true);
+                    return;
+                }
+
+                const cached = localStorage.getItem(STORAGE_KEY);
+                const fromCache = find(cached);
+                if (fromCache) {
+                    setActiveGroup(fromCache);
+                    router.replace(`/?group=${fromCache.key}`);
+                    setResolved(true);
+                    return;
+                }
+
                 setResolved(true);
-                return;
-            }
-
-            const cached = localStorage.getItem(STORAGE_KEY);
-            const fromCache = find(cached);
-            if (fromCache) {
-                setActiveGroup(fromCache);
-                router.replace(`/?group=${fromCache.key}`);
+            })
+            .catch(err => {
+                console.error("Failed to load groups", err);
                 setResolved(true);
-                return;
-            }
-
-            // No valid selection — show the picker
-            setResolved(true);
-        });
+            });
     }, [searchParams, router]);
 
     const handleSelect = (group: Group) => {

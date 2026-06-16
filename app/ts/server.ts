@@ -40,7 +40,12 @@ export const postCurrPpl = async (
 ) => {
     changeBuffer.origin = true;
 
-    await supabase.from("current_people").delete().eq("group", groupKey);
+    const { error: deleteError } = await supabase.from("current_people").delete().eq("group", groupKey);
+    if (deleteError) {
+        console.error("Error clearing current people", deleteError);
+        alert("Failed to save");
+        return false;
+    }
 
     const { error } = await supabase
         .from("current_people")
@@ -62,7 +67,12 @@ export const postDefPpl = async (
 ) => {
     changeBuffer.origin = true;
 
-    await supabase.from("default_people").delete().eq("group", groupKey);
+    const { error: deleteError } = await supabase.from("default_people").delete().eq("group", groupKey);
+    if (deleteError) {
+        console.error("Error clearing default people", deleteError);
+        alert("Failed to save");
+        return false;
+    }
 
     const { error } = await supabase
         .from("default_people")

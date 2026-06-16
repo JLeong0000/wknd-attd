@@ -14,10 +14,15 @@ const GroupPicker: React.FC<GroupPickerProps> = ({ onSelect }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        getGroups().then(g => {
-            setGroups(g);
-            setIsLoading(false);
-        });
+        getGroups()
+            .then(g => {
+                setGroups(g);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to load groups", err);
+                setIsLoading(false);
+            });
     }, []);
 
     return (
