@@ -3,9 +3,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { generateId, unicodeFormat } from "../ts/helper";
 import { getPeople, postCurrPpl, postDefPpl, SupabaseChangeListener } from "../ts/server";
-import { IoPersonAddSharp } from "react-icons/io5";
+import { IoPersonAddSharp, IoChevronForward } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { MdSwitchLeft } from "react-icons/md";
 
 import Person from "./Person";
 import { ChangeBuffer, PersonData } from "../types";
@@ -145,8 +144,8 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
         }
     };
 
-    const handleSort = () => {
-        const newSortBy = sortBy === "name" ? "status" : "name";
+    const setSort = (newSortBy: "name" | "status") => {
+        if (newSortBy === sortBy) return;
         setSortBy(newSortBy);
 
         if (newSortBy === "status") {
@@ -200,97 +199,114 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
         };
     }, [initPpl, changeBuffer, groupKey]);
 
+    const primaryBtn =
+        "flex items-center justify-center w-full h-[52px] rounded-2xl text-[17px] font-semibold transition-all duration-150 ease-out active:scale-[0.98] cursor-pointer disabled:cursor-default disabled:active:scale-100";
+
+    const segment = (value: "name" | "status", label: string) => (
+        <button
+            onClick={() => setSort(value)}
+            className={`px-5 py-1.5 rounded-full text-[15px] font-semibold transition-all duration-150 cursor-pointer ${
+                sortBy === value ? "bg-surface text-label shadow-sm" : "text-label-secondary"
+            }`}
+        >
+            {label}
+        </button>
+    );
+
     return (
-        <main>
-            <div className="min-h-screen my-auto flex flex-col items-center justify-center">
-                <div className="w-full bg-white rounded-xl shadow-lg p-4 space-y-6 max-w-lg md:max-w-4xl sm:mt-10">
-                    <header className="mt-2">
-                        <div className="flex items-center justify-center gap-3">
-                            <p className="text-4xl font-bold text-slate-800 text-center">Attendance Generator</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 mt-2">
-                            <span className="text-sm font-semibold text-white bg-indigo-700 px-3 py-1 rounded-full">{groupLabel}</span>
-                            <button
-                                onClick={onSwitchGroup}
-                                className="flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-700 cursor-pointer transition-colors"
-                            >
-                                <MdSwitchLeft className="text-base" />
-                                Switch
-                            </button>
-                        </div>
-                        <p className="text-center text-slate-500 mt-1">Update status for each person</p>
-                    </header>
-
-                    <div className="flex gap-2">
+        <main className="min-h-screen flex flex-col items-center px-5 py-8 bg-app">
+            <div className="w-full max-w-md space-y-6">
+                <header className="space-y-3 px-1">
+                    <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center rounded-full bg-accent-fill text-accent px-3 py-1 text-[13px] font-bold tracking-wide uppercase">
+                            {groupLabel}
+                        </span>
                         <button
-                            onClick={resetCurrent}
-                            disabled={isEditing}
-                            className={`w-full text-white font-bold py-2 px-4 rounded-lg ${isEditing ? "bg-zinc-700" : "bg-red-800 hover:bg-red-700 cursor-pointer"}`}
+                            onClick={onSwitchGroup}
+                            className="inline-flex items-center gap-0.5 text-accent text-[15px] font-medium hover:opacity-70 transition-opacity cursor-pointer"
                         >
-                            Reset
-                        </button>
-                        <button
-                            onClick={toggleEditing}
-                            className={`w-full bg-indigo-900 hover:bg-indigo-800 font-bold py-2 px-4 rounded-lg cursor-pointer ${isEditing ? "text-blue-400" : "text-white"}`}
-                        >
-                            {isEditing ? "Editing" : "Edit Default"}
+                            Switch
+                            <IoChevronForward className="text-sm" />
                         </button>
                     </div>
-
-                    <div className="flex items-center gap-4 justify-center text-neutral-600">
-                        <span className="font-semibold text-sm">SORT BY</span>
-                        <button
-                            onClick={handleSort}
-                            id="sortBtn"
-                            className="w-full max-w-[150px] capitalize font-bold py-2 px-4 rounded-lg bg-zinc-300 hover:bg-zinc-400 cursor-pointer"
-                        >
-                            {sortBy}
-                        </button>
+                    <div>
+                        <h1 className="font-heading text-[34px] leading-tight font-extrabold tracking-tight text-label">
+                            Attendance
+                        </h1>
+                        <p className="text-label-secondary text-[15px] mt-0.5">Update status for each person</p>
                     </div>
+                </header>
 
-                    <div className="space-y-3">
-                        {isLoading && (
-                            <div className="flex items-center justify-center px-3 py-4 text-zinc-600 tracking-widest text-xs font-bold bg-slate-300 rounded-lg border border-slate-200 animate-pulse">
-                                FETCHING PEOPLE FROM MRT
-                            </div>
-                        )}
-                        <div className="flex flex-col md:grid grid-cols-2 gap-3">{isEditing ? editingPeople : currentPeople}</div>
-                        <button
-                            onClick={addPerson}
-                            className="flex items-center justify-center w-full p-3 text-xl text-zinc-500 rounded-lg cursor-pointer border border-slate-200 bg-slate-100 hover:bg-slate-200"
-                        >
-                            <IoPersonAddSharp />
-                        </button>
+                <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                        onClick={resetCurrent}
+                        disabled={isEditing}
+                        className="flex items-center justify-center h-11 rounded-2xl bg-fill-secondary text-[15px] font-semibold text-destructive transition-all duration-150 ease-out active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:active:scale-100 disabled:cursor-default"
+                    >
+                        Reset
+                    </button>
+                    <button
+                        onClick={toggleEditing}
+                        className={`flex items-center justify-center h-11 rounded-2xl text-[15px] font-semibold transition-all duration-150 ease-out active:scale-[0.98] cursor-pointer ${
+                            isEditing ? "bg-accent-fill text-accent" : "bg-fill-secondary text-label"
+                        }`}
+                    >
+                        {isEditing ? "Editing…" : "Edit Default"}
+                    </button>
+                </div>
+
+                <div className="flex items-center justify-center">
+                    <div className="inline-flex items-center gap-1 p-1 rounded-full bg-fill-secondary">
+                        {segment("name", "Name")}
+                        {segment("status", "Status")}
                     </div>
+                </div>
 
-                    {isEditing ? (
-                        <button
-                            onClick={updateDefault}
-                            disabled={!tempModified}
-                            className={`flex justify-center w-full text-white font-bold py-3 px-4 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                                ${tempModified ? "bg-violet-600 hover:bg-violet-700 active:scale-95 cursor-pointer" : "bg-zinc-700"}`}
-                        >
-                            {isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Update Default"}
-                        </button>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            <button
-                                onClick={saveCurrent}
-                                disabled={!currModified}
-                                className={`flex justify-center w-full text-white font-bold py-3 px-4 rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                                    ${currModified ? "bg-violet-600 hover:bg-violet-700 active:scale-95 cursor-pointer" : "bg-zinc-700"}`}
-                            >
-                                {isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Save"}
-                            </button>
-                            <button
-                                onClick={() => copyGenerate(currentPpl)}
-                                className="w-full text-white font-bold py-3 px-4 rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            >
-                                Generate Message
-                            </button>
+                <div className="overflow-hidden rounded-[20px] bg-surface shadow-sm divide-y divide-separator">
+                    {isLoading && (
+                        <div className="px-4 py-4 text-center text-[12px] font-bold tracking-widest text-label-secondary animate-pulse">
+                            FETCHING PEOPLE FROM MRT
                         </div>
                     )}
+                    {isEditing ? editingPeople : currentPeople}
+                    <button
+                        onClick={addPerson}
+                        className="flex items-center gap-2 w-full px-4 min-h-[52px] text-accent text-[17px] font-medium hover:bg-fill-secondary transition-colors cursor-pointer"
+                    >
+                        <IoPersonAddSharp className="text-xl" />
+                        Add person
+                    </button>
                 </div>
+
+                {isEditing ? (
+                    <button
+                        onClick={updateDefault}
+                        disabled={!tempModified}
+                        className={`${primaryBtn} ${
+                            tempModified ? "bg-accent text-on-accent hover:bg-accent-hover" : "bg-fill-secondary text-label-secondary"
+                        }`}
+                    >
+                        {isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Update Default"}
+                    </button>
+                ) : (
+                    <div className="flex flex-col gap-2.5">
+                        <button
+                            onClick={saveCurrent}
+                            disabled={!currModified}
+                            className={`${primaryBtn} ${
+                                currModified ? "bg-accent text-on-accent hover:bg-accent-hover" : "bg-fill-secondary text-label-secondary"
+                            }`}
+                        >
+                            {isSaving ? <AiOutlineLoading3Quarters className="animate-spin text-2xl" /> : "Save"}
+                        </button>
+                        <button
+                            onClick={() => copyGenerate(currentPpl)}
+                            className={`${primaryBtn} bg-accent-fill text-accent`}
+                        >
+                            Generate Message
+                        </button>
+                    </div>
+                )}
             </div>
         </main>
     );

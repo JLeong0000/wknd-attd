@@ -50,8 +50,7 @@ const Person: React.FC<PersonProps> = ({
     return (
         <div
             key={"container_" + person.id}
-            className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 
-				${isEditing ? "text-blue-500" : ""}`}
+            className="flex items-center justify-between gap-2 px-4 min-h-[52px]"
         >
             <input
                 ref={inputRef}
@@ -59,27 +58,29 @@ const Person: React.FC<PersonProps> = ({
                 value={person.name}
                 onChange={handleNameChangeEvent}
                 onKeyDown={handleKeyDown}
-                className={`p-1 text-lg font-medium min-w-0
-					${isEditing ? "text-blue-500" : "text-slate-700"}`}
+                placeholder="Name"
+                className={`flex-1 min-w-0 bg-transparent py-3 text-[17px] font-medium outline-none placeholder:text-label-secondary/60
+                    ${isEditing ? "text-accent" : "text-label"}`}
             />
 
-            <div className="flex items-center justify-end ml-2 w-full min-w-[135px] max-w-[200px]">
+            <div className="flex items-center justify-end gap-1 shrink-0">
                 <select
                     id={"select_" + person.id}
                     value={person.status}
                     onChange={handleStatusChangeEvent}
-                    className={`p-2 w-full border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-					${isEditing ? "text-blue-500" : "text-black"}`}
+                    className={`py-1.5 pl-3 pr-2 rounded-lg bg-fill-secondary text-[15px] font-medium outline-none focus:ring-2 focus:ring-accent cursor-pointer
+                        ${isEditing ? "text-accent" : "text-label-secondary"}`}
                 >
                     {STATUSENUM.map((stat) => (
-                        <option key={stat} value={stat} className="">
+                        <option key={stat} value={stat} className="text-label bg-surface">
                             {stat}
                         </option>
                     ))}
                 </select>
                 <button
                     onClick={() => deletePerson(person.id)}
-                    className="ml-2 p-2 rounded-md cursor-pointer text-red-500 hover:bg-slate-200"
+                    aria-label={"Delete " + (person.name || "person")}
+                    className="p-2 rounded-full cursor-pointer text-label-secondary/70 hover:text-destructive hover:bg-fill-secondary active:text-destructive transition-colors"
                 >
                     <IoTrashBinSharp />
                 </button>
