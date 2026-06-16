@@ -214,17 +214,17 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
                         <span className="inline-flex items-center rounded-full bg-accent-fill text-accent px-3 py-1 text-[13px] font-bold tracking-wide uppercase">
                             {groupLabel}
                         </span>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-4">
                             <button
                                 onClick={toggleTheme}
                                 aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                                className="flex items-center justify-center w-9 h-9 rounded-full text-label-secondary hover:bg-fill-secondary hover:text-label transition-colors cursor-pointer"
+                                className="flex items-center justify-center w-11 h-11 rounded-full bg-fill-secondary text-label hover:bg-fill-secondary-hover active:scale-95 transition-all cursor-pointer"
                             >
-                                {theme === "dark" ? <IoSunny className="text-lg" /> : <IoMoon className="text-[17px]" />}
+                                {theme === "dark" ? <IoSunny className="text-xl" /> : <IoMoon className="text-lg" />}
                             </button>
                             <button
                                 onClick={onSwitchGroup}
-                                className="inline-flex items-center gap-0.5 text-accent text-[15px] font-medium hover:opacity-70 transition-opacity cursor-pointer"
+                                className="inline-flex items-center gap-0.5 text-accent text-[15px] font-medium hover:opacity-70 transition-opacity cursor-pointer py-2"
                             >
                                 Switch
                                 <IoChevronForward className="text-sm" />
