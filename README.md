@@ -1,5 +1,10 @@
 # Attendance Generator
 
+> **Developer/architecture reference:** see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+> for the current codebase map, Supabase schema, and Vercel hosting details. The writeup
+> below is the original CS50 submission and predates multi-group support, the Next.js App
+> Router structure, and the theme/search redesign.
+
 #### Video Demo: https://www.youtube.com/watch?v=pAAHUW3GQPc
 
 #### Description:
