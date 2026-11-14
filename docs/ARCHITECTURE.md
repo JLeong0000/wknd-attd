@@ -112,10 +112,13 @@ the group is attached only at write time.
 
 ## Turso
 
-- **Database:** `wknd-attd` (Turso account `jleong0000`, group `default`, region
-  `aws-ap-northeast-1` Tokyo)
-- **URL:** `libsql://wknd-attd-jleong0000.aws-ap-northeast-1.turso.io`
-- New tokens: `turso db tokens create wknd-attd`.
+- **Database:** `wknd-attd-sg` (Turso account `jleong0000`, group `sg`, region
+  `aws-ap-southeast-1` Singapore — same region as the Vercel functions)
+- **URL:** `libsql://wknd-attd-sg-jleong0000.aws-ap-southeast-1.turso.io`
+- New tokens: `turso db tokens create wknd-attd-sg`.
+- Moving a DB between Turso groups: `--from-db` doesn't work across groups, so
+  `turso db shell <old> .dump > dump.sql`, create the new DB, then
+  `turso db shell <new> < dump.sql` (`--from-dump` silently produced an empty DB).
 - Schema lives in `db/schema.sql` (checked in). Apply changes with
   `turso db shell <db> < db/schema.sql` or ad-hoc SQL via `turso db shell <db>`.
 - Data was copied from the old Supabase project (`wavnyrpdvomgoigttura`) on
@@ -165,7 +168,7 @@ needed, add auth checks inside the server actions.
   `projectId: prj_Yx7CFb205dnrCHQr45VzlU8Z4oSR`, `orgId: team_wHeYb35F2XA3BcBoBZfb8jmd`.
 - Standard Next.js deployment; pushes to the default branch deploy automatically.
 - Functions (the server actions) are pinned to `sin1` (Singapore) in `vercel.json`,
-  close to users and to the Turso DB in Tokyo. Without it they default to `iad1`.
+  next to users and the Turso DB. Without it they default to `iad1`.
 - **Environment variables** (set in the Vercel dashboard, mirrored in local `.env`):
   - `TURSO_DATABASE_URL` (`libsql://...`)
   - `TURSO_AUTH_TOKEN` (**secret**)
