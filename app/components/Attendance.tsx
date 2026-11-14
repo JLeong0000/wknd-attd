@@ -42,6 +42,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
             setIsEditing(false);
         } else {
             setTempDefPpl(defaultPpl);
+            setTempModified(false);
             setIsEditing(true);
         }
     };
