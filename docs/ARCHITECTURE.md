@@ -62,7 +62,6 @@ middleware.ts             Matches only /people; returns Edge Config currentPeopl
                           defaultPeople/settings as JSON. Standalone from the app.
 db/
   schema.sql              Turso schema (idempotent CREATE ... IF NOT EXISTS).
-  migrate-from-supabase.mjs  One-off Supabase → Turso data copy (kept for reference).
 next.config.ts            Wraps config in next-pwa ONLY when NODE_ENV=production.
 public/                   PWA icons + generated sw.js / workbox-*.js (build artifacts).
 docs/ARCHITECTURE.md      This file.
@@ -119,8 +118,9 @@ the group is attached only at write time.
 - New tokens: `turso db tokens create wknd-attd`.
 - Schema lives in `db/schema.sql` (checked in). Apply changes with
   `turso db shell <db> < db/schema.sql` or ad-hoc SQL via `turso db shell <db>`.
-- Data was copied from the old Supabase project (`wavnyrpdvomgoigttura`) by
-  `db/migrate-from-supabase.mjs`. That project is no longer used by the app.
+- Data was copied from the old Supabase project (`wavnyrpdvomgoigttura`) on
+  2026-11-14 by a one-off script (since deleted; see git history of commit `d99d013`).
+  That project is no longer used by the app.
 
 ### Schema
 
