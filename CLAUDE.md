@@ -1,8 +1,8 @@
 # CLAUDE.md
 
 **Project orientation:** Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) first — it
-documents the whole app (a multi-group attendance-generator PWA), its Supabase database
-(schema, RLS, realtime, project ref `wavnyrpdvomgoigttura`), and Vercel hosting, so you
+documents the whole app (a multi-group attendance-generator PWA), its Turso database
+(schema in `db/schema.sql`, server-only access via server actions), and Vercel hosting, so you
 don't need to re-read the codebase to get oriented. Keep it current when you change the
 data model, env, deployment, or behavior.
 

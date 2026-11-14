@@ -2,13 +2,12 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { generateId, unicodeFormat } from "../ts/helper";
-import { getPeople, postCurrPpl, postDefPpl, SupabaseChangeListener } from "../ts/server";
+import { getPeople, postCurrPpl, postDefPpl } from "../ts/server";
 import { IoPersonAddSharp, IoChevronForward, IoSearch, IoCloseCircle, IoMoon, IoSunny } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Person from "./Person";
-import { ChangeBuffer, PersonData } from "../types";
-import { supabase } from "../lib/supabaseClient";
+import { PersonData } from "../types";
 
 interface AttendanceProps {
     groupKey: string;
@@ -29,12 +28,6 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const [search, setSearch] = useState("");
     const [focusId, setFocusId] = useState<string | null>(null);
     const [theme, setTheme] = useState<"light" | "dark">("light");
-
-    const [changeBuffer] = useState<ChangeBuffer>({
-        timer: null,
-        payloads: [],
-        origin: false,
-    });
 
     const initPpl = useCallback(async () => {
         setIsLoading(true);
@@ -61,7 +54,8 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const updateDefault = async (): Promise<void> => {
         setIsSaving(true);
         setDefaultPpl(tempDefPpl);
-        const saveStatus = await postDefPpl(tempDefPpl, changeBuffer, groupKey);
+        const saveStatus = await postDefPpl(tempDefPpl, groupKey);
+        if (!saveStatus) alert("Failed to save");
         setIsSaving(false);
         setIsEditing(!saveStatus);
     };
@@ -69,7 +63,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
     const saveCurrent = async (): Promise<void> => {
         setIsSaving(true);
         setCurrModified(false);
-        await postCurrPpl(currentPpl, changeBuffer, groupKey);
+        if (!(await postCurrPpl(currentPpl, groupKey))) alert("Failed to save");
         setIsSaving(false);
     };
 
@@ -184,13 +178,7 @@ const Attendance: React.FC<AttendanceProps> = ({ groupKey, groupLabel, onSwitchG
 
     useEffect(() => {
         initPpl();
-        const channel = SupabaseChangeListener(changeBuffer, groupKey);
-        return () => {
-            if (channel) supabase.removeChannel(channel);
-            if (changeBuffer.timer) clearTimeout(changeBuffer.timer);
-            changeBuffer.payloads = [];
-        };
-    }, [initPpl, changeBuffer, groupKey]);
+    }, [initPpl]);
 
     const primaryBtn =
         "flex items-center justify-center w-full h-[52px] rounded-2xl text-[17px] font-semibold transition-all duration-150 ease-out active:scale-[0.98] cursor-pointer disabled:cursor-default disabled:active:scale-100";

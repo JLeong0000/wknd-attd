@@ -1,135 +1,66 @@
-import { supabase } from "../lib/supabaseClient";
-import { ChangeBuffer, Group, PersonData } from "../types";
+"use server";
+
+import { db } from "../lib/db";
+import { Group, PersonData } from "../types";
 
 export const getGroups = async (): Promise<Group[]> => {
-    const { data, error } = await supabase
-        .from("groups")
-        .select("*")
-        .order("label", { ascending: true });
+    const { rows } = await db.execute("SELECT key, label, sort_order FROM groups ORDER BY label");
+    return rows.map(r => ({
+        key: String(r.key),
+        label: String(r.label),
+        sort_order: Number(r.sort_order),
+    }));
+};
 
-    if (error) throw error;
-    return data ?? [];
+const selectPeople = async (table: "current_people" | "default_people", groupKey: string) => {
+    const { rows } = await db.execute({
+        sql: `SELECT id, name, status FROM ${table} WHERE "group" = ?`,
+        args: [groupKey],
+    });
+    return rows.map(r => ({ id: String(r.id), name: String(r.name ?? ""), status: String(r.status) }));
 };
 
 export const getPeople = async (groupKey: string) => {
-    const { data: currentPeople, error: errorCurr } = await supabase
-        .from("current_people")
-        .select("*")
-        .eq("group", groupKey);
-    const { data: defaultPeople, error: errorDef } = await supabase
-        .from("default_people")
-        .select("*")
-        .eq("group", groupKey);
-
-    if (errorCurr) throw errorCurr;
-    if (errorDef) throw errorDef;
+    const [currentPeople, defaultPeople] = await Promise.all([
+        selectPeople("current_people", groupKey),
+        selectPeople("default_people", groupKey),
+    ]);
 
     const sortByName = (a: PersonData, b: PersonData) =>
         a.name.localeCompare(b.name);
 
     return {
-        currentPeople: (currentPeople ?? []).sort(sortByName),
-        defaultPeople: (defaultPeople ?? []).sort(sortByName),
+        currentPeople: currentPeople.sort(sortByName),
+        defaultPeople: defaultPeople.sort(sortByName),
     };
 };
 
-export const postCurrPpl = async (
+// Full replace of the group's rows, in one transaction.
+const replacePeople = async (
+    table: "current_people" | "default_people",
     people: PersonData[],
-    changeBuffer: ChangeBuffer,
     groupKey: string
 ) => {
-    changeBuffer.origin = true;
-
-    const { error: deleteError } = await supabase.from("current_people").delete().eq("group", groupKey);
-    if (deleteError) {
-        console.error("Error clearing current people", deleteError);
-        alert("Failed to save");
+    try {
+        await db.batch(
+            [
+                { sql: `DELETE FROM ${table} WHERE "group" = ?`, args: [groupKey] },
+                ...people.map(p => ({
+                    sql: `INSERT INTO ${table} (id, name, status, "group") VALUES (?, ?, ?, ?)`,
+                    args: [p.id, p.name, p.status, groupKey],
+                })),
+            ],
+            "write"
+        );
+        return true;
+    } catch (error) {
+        console.error(`Error saving ${table}`, people, error);
         return false;
     }
-
-    const { error } = await supabase
-        .from("current_people")
-        .insert(people.map(p => ({ ...p, group: groupKey })))
-        .select();
-
-    if (error) {
-        console.error("Error saving current people", people, error);
-        alert("Failed to save");
-        return false;
-    }
-    return true;
 };
 
-export const postDefPpl = async (
-    people: PersonData[],
-    changeBuffer: ChangeBuffer,
-    groupKey: string
-) => {
-    changeBuffer.origin = true;
+export const postCurrPpl = async (people: PersonData[], groupKey: string) =>
+    replacePeople("current_people", people, groupKey);
 
-    const { error: deleteError } = await supabase.from("default_people").delete().eq("group", groupKey);
-    if (deleteError) {
-        console.error("Error clearing default people", deleteError);
-        alert("Failed to save");
-        return false;
-    }
-
-    const { error } = await supabase
-        .from("default_people")
-        .insert(people.map(p => ({ ...p, group: groupKey })))
-        .select();
-
-    if (error) {
-        console.error("Error saving default people", people, error);
-        alert("Failed to save");
-        return false;
-    }
-    return true;
-};
-
-export const SupabaseChangeListener = (changeBuffer: ChangeBuffer, groupKey: string) => {
-    const processChanges = () => {
-        if (changeBuffer.payloads.length > 0) {
-            console.log("Batch changes detected:", changeBuffer.payloads);
-
-            if (!changeBuffer.origin) {
-                alert("Data has been updated. Please reload page ✨");
-                changeBuffer.payloads = [];
-            }
-
-            changeBuffer.origin = false;
-        }
-    };
-
-    return supabase
-        .channel(`supabase-listener-${groupKey}`)
-        .on(
-            "postgres_changes",
-            {
-                event: "*",
-                schema: "public",
-                table: "current_people",
-                filter: `group=eq.${groupKey}`,
-            },
-            (payload) => {
-                if (changeBuffer.timer) clearTimeout(changeBuffer.timer);
-                changeBuffer.payloads.push(payload);
-                changeBuffer.timer = setTimeout(processChanges, 500);
-            }
-        )
-        .on(
-            "postgres_changes",
-            {
-                event: "*",
-                schema: "public",
-                table: "default_people",
-                filter: `group=eq.${groupKey}`,
-            },
-            (payload) => {
-                if (changeBuffer.timer) clearTimeout(changeBuffer.timer);
-                changeBuffer.payloads.push(payload);
-                changeBuffer.timer = setTimeout(processChanges, 500);
-            }
-        )
-        .subscribe();
-};
+export const postDefPpl = async (people: PersonData[], groupKey: string) =>
+    replacePeople("default_people", people, groupKey);
