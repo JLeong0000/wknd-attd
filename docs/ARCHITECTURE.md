@@ -164,6 +164,8 @@ needed, add auth checks inside the server actions.
 - Linked via `.vercel/project.json` (gitignored): project `wknd-attd`,
   `projectId: prj_Yx7CFb205dnrCHQr45VzlU8Z4oSR`, `orgId: team_wHeYb35F2XA3BcBoBZfb8jmd`.
 - Standard Next.js deployment; pushes to the default branch deploy automatically.
+- Functions (the server actions) are pinned to `sin1` (Singapore) in `vercel.json`,
+  close to users and to the Turso DB in Tokyo. Without it they default to `iad1`.
 - **Environment variables** (set in the Vercel dashboard, mirrored in local `.env`):
   - `TURSO_DATABASE_URL` (`libsql://...`)
   - `TURSO_AUTH_TOKEN` (**secret**)
